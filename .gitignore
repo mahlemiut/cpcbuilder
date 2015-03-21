@@ -1,0 +1,11 @@
+*~
+/*
+!/*/
+!/.gitattributes
+!/.gitignore
+!/ide.pro
+!/*.md
+/debug
+/release
+
+

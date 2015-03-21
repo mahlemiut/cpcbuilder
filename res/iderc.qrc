@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="forms">
+    <file>ide_buildoptions.ui</file>
+    <file>ide_tilesize.ui</file>
+    <file>ide_palette.ui</file>
+    <file>ide_emuprop.ui</file>
+    <file>ide_fileprop.ui</file>
+    <file>ide_newproject.ui</file>
+    <file>ide_about.ui</file>
+  </qresource>
+  <qresource prefix="images">
+    <file>linear.ico</file>
+    <file>screen.ico</file>
+    <file>line.ico</file>
+    <file>box.ico</file>
+    <file>plot.ico</file>
+    <file>add.ico</file>
+    <file>remove.ico</file>
+  </qresource>
+</RCC>
