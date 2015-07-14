@@ -60,9 +60,7 @@ gfxeditor::gfxeditor(QWidget* parent) :
 	QWidget(parent),
 	m_width(0),
 	m_height(0),
-	m_mode(1),
-	m_tile_current(1),
-	m_tile_total(1)
+	m_mode(1)
 {
 	unsigned char* paldata;
 	int x;
@@ -77,9 +75,6 @@ gfxeditor::gfxeditor(QWidget* parent) :
 	m_frame_palette = new paletteeditor(dynamic_cast<QWidget*>(m_layout));
 	m_frame_gfx = new gfxdisplay(dynamic_cast<QWidget*>(this),m_frame_palette);
 	m_combo_mode = new QComboBox(dynamic_cast<QWidget*>(m_toolbar));
-	m_label_tile_left = new QLabel(dynamic_cast<QWidget*>(m_toolbar));
-	m_label_tile_right = new QLabel(dynamic_cast<QWidget*>(m_toolbar));
-	m_spin_tile = new QSpinBox(dynamic_cast<QWidget*>(m_toolbar));
 	m_combo_zoom = new QComboBox(dynamic_cast<QWidget*>(m_toolbar));
 	setLayout(m_layout);
 
@@ -118,28 +113,6 @@ gfxeditor::gfxeditor(QWidget* parent) :
 	m_actgroup_drawing->addAction(act2);
 	m_actgroup_drawing->addAction(act3);
 	m_actgroup_drawing->setExclusive(true);
-
-	m_toolbar->addSeparator();
-
-	// add tile selection to toolbar
-	m_label_tile_left->setText("Tile");
-	m_spin_tile->setValue(1);
-	m_toolbar->addWidget(m_label_tile_left);
-	m_toolbar->addWidget(m_spin_tile);
-	m_toolbar->addWidget(m_label_tile_right);
-
-	connect(m_spin_tile,SIGNAL(valueChanged(int)),this,SLOT(current_tile_changed(int)));
-
-	// add tile add/remove buttons to toolbar
-	m_act_addtile = new QAction("Add tile",this);
-	m_act_addtile->setIcon(QIcon(":/images/add.ico"));
-	connect(m_act_addtile,SIGNAL(triggered()),this,SLOT(add_gfx_tile()));
-	m_toolbar->addAction(m_act_addtile);
-
-	m_act_deltile = new QAction("Remove tile",this);
-	m_act_deltile->setIcon(QIcon(":/images/remove.ico"));
-	connect(m_act_deltile,SIGNAL(triggered()),this,SLOT(remove_gfx_tile()));
-	m_toolbar->addAction(m_act_deltile);
 
 	m_toolbar->addSeparator();
 
@@ -182,9 +155,7 @@ gfxeditor::gfxeditor(QWidget* parent) :
 //	m_frame_gfx->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 //	m_frame_gfx->setScene(&m_scene);
 	m_frame_gfx->set_mode(1);
-
-
-	m_label_tile_right->setText(QString("of %1").arg(get_tile_num()));
+	m_frame_gfx->set_format_screen();
 }
 
 gfxeditor::~gfxeditor()
@@ -205,8 +176,6 @@ void gfxeditor::set_data(unsigned char* data, int size)
 	m_data = data;
 	m_datasize = size;
 	m_frame_gfx->set_data(data,m_width,m_height);
-
-	calculate_tiles();
 }
 
 bool gfxeditor::load_pal_normal(unsigned char* data)
@@ -245,61 +214,10 @@ void gfxeditor::export_palette_to_clipboard()
 	m_frame_palette->export_palette_to_clipboard();
 }
 
-void gfxeditor::calculate_tiles()
-{
-	// calculate total gfx tiles in data
-	if(m_width != 0 && m_height != 0)
-	{
-		m_tile_total = m_datasize / (m_width * m_height);
-		m_label_tile_right->setText(QString("of %1").arg(get_tile_num()));
-		m_spin_tile->setRange(1,m_tile_total);
-	}
-	else
-	{
-		m_label_tile_right->setText("of ??");
-		m_spin_tile->setRange(1,1);
-	}
-}
-
-void gfxeditor::add_gfx_tile()
-{
-	unsigned char* new_data;
-	m_datasize += (m_width * m_height);
-	new_data = (unsigned char*)realloc(m_data,m_datasize);
-	if(new_data != NULL)
-	{
-		m_data = new_data;
-		memset(new_data+(m_tile_total*(m_width*m_height)),0,(m_width*m_height));  // clear data in new tile
-		m_frame_gfx->realloc_data(new_data);
-	}
-	else
-		m_datasize -= (m_width * m_height);  // revert size change
-	calculate_tiles();
-}
-
-void gfxeditor::remove_gfx_tile()
-{
-	unsigned char* new_data;
-	if(m_datasize <= (int)(m_width * m_height))
-		return;  // Only one tile left, no point deleting that.
-	m_datasize -= (m_width * m_height);
-	new_data = (unsigned char*)realloc(m_data,m_datasize);
-	// TODO: perhaps move data after the current tile back so that it's the current tile that is deleted
-	if(new_data != NULL)
-	{
-		m_data = new_data;
-		m_frame_gfx->realloc_data(new_data);
-	}
-	else
-		m_datasize += (m_width * m_height);  // revert size change
-	calculate_tiles();
-
-}
-
 // plot a pixel at the location given, in the selected pen
 void gfxeditor::plot(int x, int y)
 {
-	int loc;
+	int loc = 0;
 	int mask = 0;  // bit mask for the pixel written
 	int pen = m_frame_palette->get_selected();
 	int col = 0;
@@ -307,8 +225,15 @@ void gfxeditor::plot(int x, int y)
 	if(x < 0 || y < 0)
 		return;
 
-	loc = ((m_tile_current-1) * (m_width*m_height));  // go to start of current tile data
-	loc += m_width * y;
+	// the gfx editor uses the CPC screen layout
+	if(m_frame_gfx->get_format() == SCR_FORMAT_SCREEN)
+	{
+		loc = m_width * (y / 8);
+		loc += 0x800 * (y % 8);
+	}
+	else if(m_frame_gfx->get_format() == SCR_FORMAT_LINEAR)
+		loc = m_width * y;
+
 	switch(m_frame_gfx->get_mode())
 	{
 	case 2:
@@ -406,6 +331,148 @@ void gfxeditor::mousePressEvent(QMouseEvent* event)
 {
 	QWidget::mousePressEvent(event);
 }
+
+//-------------------------------
+// Tile editor widget code
+
+tileeditor::tileeditor(QWidget* parent) :
+		gfxeditor(parent),
+		m_tile_current(1),
+		m_tile_total(1)
+{
+	m_label_tile_left = new QLabel(dynamic_cast<QWidget*>(m_toolbar));
+	m_label_tile_right = new QLabel(dynamic_cast<QWidget*>(m_toolbar));
+	m_spin_tile = new QSpinBox(dynamic_cast<QWidget*>(m_toolbar));
+
+	// add tile selection to toolbar
+	m_label_tile_left->setText("Tile");
+	m_spin_tile->setValue(1);
+	m_toolbar->addWidget(m_label_tile_left);
+	m_toolbar->addWidget(m_spin_tile);
+	m_toolbar->addWidget(m_label_tile_right);
+
+	connect(m_spin_tile,SIGNAL(valueChanged(int)),this,SLOT(current_tile_changed(int)));
+
+	// add tile add/remove buttons to toolbar
+	m_act_addtile = new QAction("Add tile",this);
+	m_act_addtile->setIcon(QIcon(":/images/add.ico"));
+	connect(m_act_addtile,SIGNAL(triggered()),this,SLOT(add_gfx_tile()));
+	m_toolbar->addAction(m_act_addtile);
+
+	m_act_deltile = new QAction("Remove tile",this);
+	m_act_deltile->setIcon(QIcon(":/images/remove.ico"));
+	connect(m_act_deltile,SIGNAL(triggered()),this,SLOT(remove_gfx_tile()));
+	m_toolbar->addAction(m_act_deltile);
+
+	m_label_tile_right->setText(QString("of %1").arg(get_tile_num()));
+
+	m_toolbar->addSeparator();
+	m_frame_gfx->set_format_linear();
+}
+
+tileeditor::~tileeditor()
+{
+}
+
+void tileeditor::calculate_tiles()
+{
+	// calculate total gfx tiles in data
+	if(m_width != 0 && m_height != 0)
+	{
+		m_tile_total = m_datasize / (m_width * m_height);
+		m_label_tile_right->setText(QString("of %1").arg(get_tile_num()));
+		m_spin_tile->setRange(1,m_tile_total);
+	}
+	else
+	{
+		m_label_tile_right->setText("of ??");
+		m_spin_tile->setRange(1,1);
+	}
+}
+
+void tileeditor::add_gfx_tile()
+{
+	unsigned char* new_data;
+	m_datasize += (m_width * m_height);
+	new_data = (unsigned char*)realloc(m_data,m_datasize);
+	if(new_data != NULL)
+	{
+		m_data = new_data;
+		memset(new_data+(m_tile_total*(m_width*m_height)),0,(m_width*m_height));  // clear data in new tile
+		m_frame_gfx->realloc_data(new_data);
+	}
+	else
+		m_datasize -= (m_width * m_height);  // revert size change
+	calculate_tiles();
+}
+
+void tileeditor::remove_gfx_tile()
+{
+	unsigned char* new_data;
+	if(m_datasize <= (int)(m_width * m_height))
+		return;  // Only one tile left, no point deleting that.
+	m_datasize -= (m_width * m_height);
+	new_data = (unsigned char*)realloc(m_data,m_datasize);
+	// TODO: perhaps move data after the current tile back so that it's the current tile that is deleted
+	if(new_data != NULL)
+	{
+		m_data = new_data;
+		m_frame_gfx->realloc_data(new_data);
+	}
+	else
+		m_datasize += (m_width * m_height);  // revert size change
+	calculate_tiles();
+}
+
+void tileeditor::set_data(unsigned char* data, int size)
+{
+	gfxeditor::set_data(data,size);
+	calculate_tiles();
+}
+
+// plot a pixel at the location given, in the selected pen
+void tileeditor::plot(int x, int y)
+{
+	int loc;
+	int mask = 0;  // bit mask for the pixel written
+	int pen = m_frame_palette->get_selected();
+	int col = 0;
+
+	if(x < 0 || y < 0)
+		return;
+
+	// the tile editor does not use the CPC screen layout, it is stored linearly
+	loc = ((m_tile_current-1) * (m_width*m_height));  // go to start of current tile data
+	loc += m_width * y;
+
+	switch(m_frame_gfx->get_mode())
+	{
+	case 2:
+		loc += (x / 8);
+		mask = 0x01 << (7 - (x % 8));
+		col = (pen & 0x01) << (7 - (x % 8));
+		break;
+	case 1:
+		loc += (x / 4);
+		mask = 0x11 << (3 - (x % 4));
+		col = ((pen & 0x02) << 2) >> (x % 4);
+		col |= ((pen & 0x01) << 7) >> (x % 4);
+		break;
+	case 3:
+		pen &= 0x03;
+	case 0:
+		loc += (x / 2);
+		mask = 0x55 << (1 - (x % 2));
+		col = ((pen & 0x08) >> 2) >> (x % 2);
+		col |= ((pen & 0x04) << 3) >> (x % 2);
+		col |= ((pen & 0x02) << 2) >> (x % 2);
+		col |= ((pen & 0x01) << 7) >> (x % 2);
+		break;
+	}
+	if(loc < m_datasize)
+		m_data[loc] = (m_data[loc] &= ~mask) | col;
+}
+
 
 //-------------------------------
 // Palette Editor widget code

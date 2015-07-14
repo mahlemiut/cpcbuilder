@@ -27,6 +27,9 @@ public:
 		if(!m_loaded)
 			return 0;
 
+		// For now, we'll stick with the default screen size
+		return 16384;
+
 		switch(mode)
 		{
 		default:

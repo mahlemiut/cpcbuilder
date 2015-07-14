@@ -61,6 +61,7 @@ public:
 	ui_QMdiSubWindow* CreateWindowAsm();
 	ui_QMdiSubWindow* CreateWindowBinary();
 	ui_QMdiSubWindow* CreateWindowGraphics();
+	ui_QMdiSubWindow* CreateWindowTileset();
 	ui_QMdiSubWindow* CreateWindowASCII();
 	bool check_for_open_file(QString filename);
 	void remove_file(QString filename);
@@ -73,6 +74,7 @@ public slots:
 	void BuildProject();
 	void NewFile();
 	void NewGfxFile();
+	void NewTilesetFile();
 	void OpenFile();
 	void SaveFile();
 	void SaveFileAs();

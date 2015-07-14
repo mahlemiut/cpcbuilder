@@ -128,7 +128,7 @@ void ui_main::OpenProject()
 						QStringList split = pfile->get_filename().split(QDir::separator());
 						ui_QMdiSubWindow* subwin = CreateWindowAsm();
 						subwin->load_text(pfile->get_filename());
-						subwin->setWindowTitle(split.last());
+						subwin->setWindowTitle("Z80 Assembly - " + split.last());
 						if(attr.hasAttribute("load"))
 							pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
 						if(attr.hasAttribute("exec"))
@@ -151,7 +151,7 @@ void ui_main::OpenProject()
 						}
 						else
 							subwin->load_gfx(pfile->get_filename());
-						subwin->setWindowTitle(split.last());
+						subwin->setWindowTitle("Graphics Editor (Screen) - " + split.last());
 						if(attr.hasAttribute("load"))
 							pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
 						if(attr.hasAttribute("exec"))
@@ -168,7 +168,7 @@ void ui_main::OpenProject()
 						QStringList split = pfile->get_filename().split(QDir::separator());
 						ui_QMdiSubWindow* subwin = CreateWindowBinary();
 						subwin->load_binary(pfile->get_filename());
-						subwin->setWindowTitle(split.last());
+						subwin->setWindowTitle("Binary File - " + split.last());
 					}
 					if(attr.hasAttribute("load"))
 						pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
@@ -185,7 +185,7 @@ void ui_main::OpenProject()
 						QStringList split = pfile->get_filename().split(QDir::separator());
 						ui_QMdiSubWindow* subwin = CreateWindowASCII();
 						subwin->load_text(pfile->get_filename());
-						subwin->setWindowTitle(split.last());
+						subwin->setWindowTitle("ASCII file - " + split.last());
 						if(attr.hasAttribute("load"))
 							pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
 						if(attr.hasAttribute("exec"))
@@ -429,6 +429,42 @@ ui_QMdiSubWindow* ui_main::CreateWindowGraphics()
 	return subwin;
 }
 
+ui_QMdiSubWindow* ui_main::CreateWindowTileset()
+{
+	ui_QMdiSubWindow* subwin = new ui_QMdiSubWindow(PROJECT_FILE_TILESET,this);
+	tileeditor* widget = new tileeditor(subwin);
+
+	widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+	palmenu = new QAction("12-bit palette",this);
+	palmenu->setCheckable(true);
+	palmenu->setChecked(false);
+	connect(palmenu,SIGNAL(triggered()),this,SLOT(TogglePal()));
+	widget->addAction(palmenu);
+	QAction* act2 = new QAction("Import CPC palette...",this);
+	connect(act2,SIGNAL(triggered()),this,SLOT(ImportPal()));
+	widget->addAction(act2);
+	QAction* act3 = new QAction("Import 12-bit CPC+ palette...",this);
+	connect(act3,SIGNAL(triggered()),this,SLOT(ImportPalPlus()));
+	widget->addAction(act3);
+	QAction* act5 = new QAction("Export CPC palette to clipboard",this);
+	connect(act5,SIGNAL(triggered()),this,SLOT(ExportPalClip()));
+	widget->addAction(act5);
+	QAction* sep = new QAction(this);
+	sep->setSeparator(true);
+	widget->addAction(sep);
+	QAction* act4 = new QAction("Add file to current project",this);
+	connect(act4,SIGNAL(triggered()),this,SLOT(AddToProject()));
+	widget->addAction(act4);
+	subwin->setWidget(widget);
+	subwin->setMinimumSize(400,400);
+	subwin->setAttribute(Qt::WA_DeleteOnClose);
+	//connect(widget,SIGNAL(textChanged()),subwin,SLOT(contents_changed()));
+	mdi_main->addSubWindow(subwin);
+	subwin->show();
+	m_doclist.append(subwin);
+	return subwin;
+}
+
 ui_QMdiSubWindow* ui_main::CreateWindowASCII()
 {
 	ui_QMdiSubWindow* subwin = new ui_QMdiSubWindow(PROJECT_FILE_ASCII,this);
@@ -482,6 +518,24 @@ void ui_main::NewFile()
 void ui_main::NewGfxFile()
 {
 	int w,h;
+
+	unsigned char* data;
+	ui_QMdiSubWindow* subwin = CreateWindowGraphics();
+	gfxeditor* widget = dynamic_cast<gfxeditor*>(subwin->widget());
+
+	// TODO: add support for other sizes, in particular overscan
+	w = 80;  // normal screen size
+	h = 200;
+	widget->set_size(w,h);
+	data = (unsigned char*)malloc(16384);  // screen size is 16kB (not all is visible)
+	memset(data,0,16384);
+	widget->set_data(data,16384);
+	widget->draw_scene();
+}
+
+void ui_main::NewTilesetFile()
+{
+	int w,h;
 	QUiLoader loader;
 	QFile uif(":/forms/ide_tilesize.ui");
 	QWidget* form;
@@ -509,8 +563,8 @@ void ui_main::NewGfxFile()
 		return;
 
 	unsigned char* data;
-	ui_QMdiSubWindow* subwin = CreateWindowGraphics();
-	gfxeditor* widget = dynamic_cast<gfxeditor*>(subwin->widget());
+	ui_QMdiSubWindow* subwin = CreateWindowTileset();
+	tileeditor* widget = dynamic_cast<tileeditor*>(subwin->widget());
 
 	widget->set_size(w,h);
 	data = (unsigned char*)malloc(w*h);
@@ -551,7 +605,7 @@ void ui_main::OpenFile()
 			QString shortname = split.last();
 
 			subwin->load_text(filename);
-			subwin->setWindowTitle(shortname);
+			subwin->setWindowTitle("Z80 Assembly - " + shortname);
 		}
 		else if(dlg_combo->currentIndex() == 1)  // Binary
 		{
@@ -567,7 +621,7 @@ void ui_main::OpenFile()
 			QString shortname = split.last();
 
 			subwin->load_binary(filename);
-			subwin->setWindowTitle(shortname);
+			subwin->setWindowTitle("Binary file - " + shortname);
 		}
 		else if(dlg_combo->currentIndex() == 2)  // Graphics
 		{
@@ -587,7 +641,7 @@ void ui_main::OpenFile()
 				subwin->close();  // close window if load fails.
 				return;
 			}
-			subwin->setWindowTitle(shortname);
+			subwin->setWindowTitle("Graphics Editor (Screen) - " + shortname);
 		}
 		else if(dlg_combo->currentIndex() == 3)  // ASCII
 		{
@@ -607,7 +661,7 @@ void ui_main::OpenFile()
 				subwin->close();  // close window if load fails.
 				return;
 			}
-			subwin->setWindowTitle(shortname);
+			subwin->setWindowTitle("ASCII file - " + shortname);
 		}
 	}
 }
@@ -618,6 +672,7 @@ void ui_main::SaveFile()
 	if(subwin == NULL)
 		return;
 	QString filename = subwin->get_filename();
+	QString typestr;
 	if(filename.isEmpty())
 		SaveFileAs();
 	// if filename is still empty, then the Save As dialog must have been cancelled.
@@ -631,6 +686,7 @@ void ui_main::SaveFile()
 		QList<QAction*> actlist = widget->actions();
 		QAction* act = actlist[3];  // TODO: maybe there's a better way to actually search for a list item
 		act->setEnabled(true);
+		typestr = "Z80 Assembly - ";
 	}
 	else if(subwin->get_doctype() == PROJECT_FILE_GRAPHICS)
 	{
@@ -640,9 +696,10 @@ void ui_main::SaveFile()
 		QList<QAction*> actlist = widget->actions();
 		QAction* act = actlist[0];  // TODO: maybe there's a better way to actually search for a list item
 		act->setEnabled(true);
+		typestr = "Graphics Editor (Screen) - ";
 	}
 	QStringList split = filename.split(QDir::separator());
-	subwin->setWindowTitle(split.last());
+	subwin->setWindowTitle(typestr + split.last());
 }
 
 void ui_main::SaveFileAs()
@@ -728,7 +785,7 @@ void ui_main::ImportScr()
 			subwin->close();  // close window if import fails.
 			return;
 		}
-		subwin->setWindowTitle(shortname);
+		subwin->setWindowTitle("Graphics Editor (Screen) - " + shortname);
 	}
 }
 
@@ -741,6 +798,7 @@ void ui_main::closeEvent(QCloseEvent* event)
 void ui_main::DockOpenFile(QTreeWidgetItem* widget, int col)
 {
 	QString filename;
+	QString typestr;
 	filename = widget->toolTip(col);
 	if(widget->parent() == NULL)
 		return;
@@ -757,26 +815,30 @@ void ui_main::DockOpenFile(QTreeWidgetItem* widget, int col)
 	case PROJECT_FILE_SOURCE_ASM:
 		subwin = CreateWindowAsm();
 		subwin->load_text(filename);
+		typestr = "Z80 Assembly - ";
 		break;
 	case PROJECT_FILE_BINARY:
 		subwin = CreateWindowBinary();
 		subwin->load_binary(filename);
+		typestr = "Binary file - ";
 		break;
 	case PROJECT_FILE_GRAPHICS:
 		subwin = CreateWindowGraphics();
 		subwin->load_gfx(filename,f->get_width(),f->get_height());
+		typestr = "Graphics Editor (Screen) - ";
 		break;
 	case PROJECT_FILE_ASCII:
 	default:
 		subwin = CreateWindowASCII();
 		subwin->load_text(filename);
+		typestr = "ASCII file - ";
 		break;
 	}
 
 	QStringList split = filename.split(QDir::separator());
 	QString shortname = split.last();
 
-	subwin->setWindowTitle(shortname);
+	subwin->setWindowTitle(typestr + shortname);
 }
 
 void ui_main::EditProperties()
@@ -896,7 +958,7 @@ void ui_main::ImportImage()
 			subwin->close();  // close window if import fails.
 			return;
 		}
-		subwin->setWindowTitle(shortname);
+		subwin->setWindowTitle("Graphics Editor (Linear) - " + shortname);
 	}
 }
 
@@ -1287,6 +1349,7 @@ bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 
 	size = conv.calculate_size(mode);
 	buffer = (unsigned char*)malloc(size);  // should be a decent enough size
+	memset(buffer,0,size);
 	if(!conv.convert(buffer,size,mode))
 	{
 		// failed
@@ -1296,10 +1359,12 @@ bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 	else
 	{
 		// success
-		gfx->set_size(conv.get_width(),conv.get_height());
+		gfx->set_size(80,200);//conv.get_width(),conv.get_height());
+		gfx->set_format_screen();
 		gfx->set_data(buffer,size);
 		for(int x=0;x<4;x++)
 			gfx->set_pen(x,conv.get_colour(x));
+		m_filename = filename;
 		return true;
 	}
 

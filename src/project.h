@@ -15,7 +15,8 @@ enum
 	PROJECT_FILE_BINARY = 0,  // will just be copied to destination
 	PROJECT_FILE_SOURCE_ASM, // will be compiled by Pasmo
 	PROJECT_FILE_GRAPHICS,  // graphics data, will be treated the same as binary data
-	PROJECT_FILE_ASCII  // Will be copied without an AMSDOS header (unless protected)
+	PROJECT_FILE_ASCII,  // Will be copied without an AMSDOS header (unless protected)
+	PROJECT_FILE_TILESET  // also graphics data, but stored linearly
 };
 
 class project_file

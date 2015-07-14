@@ -29,10 +29,28 @@ imageconvert::imageconvert(QString fname)
 
 bool imageconvert::convert(unsigned char* buffer, int buffer_size, int mode)
 {
+	QImage temp_img;
+
 	if(!m_loaded)
 		return false;
 	if(mode < 0 || mode > 2)  // maybe add mode 3?
 		return false;
+
+	switch(mode)
+	{
+	case 0:
+	case 3:
+		temp_img = m_image.scaled(160,200,Qt::IgnoreAspectRatio);
+		break;
+	case 1:
+		temp_img = m_image.scaled(320,200,Qt::IgnoreAspectRatio);
+		break;
+	case 2:
+		temp_img = m_image.scaled(640,200,Qt::IgnoreAspectRatio);
+		break;
+	}
+
+	m_image = temp_img;
 
 	switch(mode)
 	{
@@ -87,6 +105,9 @@ bool imageconvert::convert_mode0(unsigned char* buffer, int buffer_size)
 			buffer[ptr] |= res;
 			ptr++;
 		}
+		ptr = (y / 8) * m_width;
+		ptr += 0x800 * (y % 8);
+		ptr &= 0x3fff;
 	}
 	return true;
 }
@@ -138,6 +159,9 @@ bool imageconvert::convert_mode1(unsigned char* buffer, int buffer_size)
 			buffer[ptr] |= res;
 			ptr++;
 		}
+		ptr = (y / 8) * m_width;
+		ptr += 0x800 * (y % 8);
+		ptr &= 0x3fff;
 	}
 	return true;
 }
@@ -201,6 +225,9 @@ bool imageconvert::convert_mode2(unsigned char* buffer, int buffer_size)
 			buffer[ptr] |= res;
 			ptr++;
 		}
+		ptr = (y / 8) * m_width;
+		ptr += 0x800 * (y % 8);
+		ptr &= 0x3fff;
 	}
 	return true;
 }

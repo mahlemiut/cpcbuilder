@@ -71,6 +71,7 @@ public:
 	int get_width() { return m_width; }
 	int get_height_pixel() { return (m_width * 8) * m_zoom; }
 	int get_width_pixel() { return (m_height * 2) * m_zoom; }
+	int get_format() { return m_format; }
 	void set_size(unsigned int width, unsigned int height) { m_width = width; m_height = height; resize((m_width * 8) * m_zoom,(m_height * m_zoom) * 2); }
 	void set_tile(unsigned int tile) { m_tile_current = tile; }
 	void line_guide_active(bool state) { m_line_click = state; }
@@ -157,19 +158,18 @@ public:
 	~gfxeditor();
 	QWidget* parent() { return m_parent; }
 	QGridLayout* layout() { return m_layout; }
-	void set_data(unsigned char* data, int size);
-	void set_size(unsigned int width, unsigned int height) { m_width = width; m_height = height; m_frame_gfx->set_size(width,height); calculate_tiles(); }
+	virtual void set_data(unsigned char* data, int size);
+	void set_size(unsigned int width, unsigned int height) { m_width = width; m_height = height; m_frame_gfx->set_size(width,height); /*calculate_tiles();*/ }
 	int get_width() { return m_frame_gfx->get_width(); }
 	int get_height() { return m_frame_gfx->get_height(); }
 	void set_mode(unsigned char mode) { m_mode = mode; m_frame_gfx->set_mode(mode); }
-	int get_tile_num() { return m_tile_total; }
 	int get_datasize() { return m_datasize; }
 	QScrollArea* get_scrollarea() { return m_scrollarea; }
 	unsigned char* get_data() const { return m_data; }
 	QColor get_colour(unsigned int pen);
-	void plot(int x, int y);  // plot a point in the graphic using the currently selected pen
-	void line(int x0, int y0, int x1, int y1); // draw a line in the currently selected pen
-	void box(int x0, int y0, int x1, int y1);  // draw a box in the currently selected pen
+	virtual void plot(int x, int y);  // plot a point in the graphic using the currently selected pen
+	virtual void line(int x0, int y0, int x1, int y1); // draw a line in the currently selected pen
+	virtual void box(int x0, int y0, int x1, int y1);  // draw a box in the currently selected pen
 	bool load_pal_normal(unsigned char* data);
 	bool load_pal_12bit(unsigned short* data);
 	bool toggle_pal();
@@ -178,26 +178,18 @@ public:
 	bool set_pen(int index, QColor colour) { return m_frame_palette->set_pen(index,colour); }
 public slots:
 	void draw_scene() { m_frame_gfx->repaint(); }//m_frame_gfx->draw_scene(m_data,m_frame_palette,m_tile_current); }
-	void current_tile_changed(int val) { m_tile_current = val; m_frame_gfx->set_tile(val); draw_scene(); }
-	void add_gfx_tile();
-	void remove_gfx_tile();
-	void set_format_linear() { m_frame_gfx->set_format_linear(); m_actgroup_drawing->setEnabled(true); m_spin_tile->setEnabled(true); m_act_addtile->setEnabled(true); m_act_deltile->setEnabled(true); }
-	void set_format_screen() { m_frame_gfx->set_format_screen(); m_actgroup_drawing->setEnabled(false); m_spin_tile->setEnabled(false); m_act_addtile->setEnabled(false); m_act_deltile->setEnabled(false); }
+	void set_format_linear() { m_frame_gfx->set_format_linear(); }
+	void set_format_screen() { m_frame_gfx->set_format_screen(); }
 protected:
 	void mousePressEvent(QMouseEvent* event);
-private:
 	QWidget* m_parent;
 	unsigned char* m_data;
 	int m_datasize;
 	unsigned int m_width;  // width is in bytes, so 8 pixels in mode 2, 4 in mode 1, and 2 in mode 0 (and 3)
 	unsigned int m_height;
 	unsigned char m_mode;
-	unsigned int m_tile_current;  // currently displayed graphic
-	unsigned int m_tile_total;  // total number of graphics
 	unsigned char* m_palette;
 	unsigned short* m_plus_palette;  // for CPC Plus palette, when we get around to that.
-
-	void calculate_tiles();  // calculate the number of tiles that the data represents
 
 	// child widgets used in this widget
 	QGridLayout* m_layout;
@@ -207,14 +199,36 @@ private:
 	QComboBox* m_combo_mode;  // used to select the CPC video mode to render as
 	QScrollArea* m_scrollarea;  // scroll area for the display of gfx
 //	QGraphicsScene m_scene;
+	QComboBox* m_combo_zoom;
+	QActionGroup* m_actgroup_drawing;
+};
+
+class tileeditor : public gfxeditor
+{
+	Q_OBJECT
+
+public:
+	tileeditor(QWidget* parent = 0);
+	~tileeditor();
+	virtual void set_data(unsigned char* data, int size);
+	virtual void plot(int x, int y);  // plot a point in the graphic using the currently selected pen
+
+public slots:
+	void current_tile_changed(int val) { m_tile_current = val; m_frame_gfx->set_tile(val); draw_scene(); }
+	void add_gfx_tile();
+	void remove_gfx_tile();
+
+private:
+	void calculate_tiles();  // calculate the number of tiles that the data represents
+	int get_tile_num() { return m_tile_total; }
+	unsigned int m_tile_current;  // currently displayed graphic
+	unsigned int m_tile_total;  // total number of graphics
+
 	QSpinBox* m_spin_tile;
 	QLabel* m_label_tile_left;
 	QLabel* m_label_tile_right;
-	QComboBox* m_combo_zoom;
-	QActionGroup* m_actgroup_drawing;
 	QAction* m_act_addtile;
 	QAction* m_act_deltile;
 };
-
 
 #endif /* GFXEDITOR_H_ */

@@ -45,6 +45,7 @@
     </property>
     <addaction name="menu_file_new"/>
     <addaction name="menu_file_new_gfx"/>
+    <addaction name="menu_file_new_tileset"/>
     <addaction name="menu_file_open"/>
     <addaction name="menu_file_save"/>
     <addaction name="menu_file_saveas"/>
@@ -113,9 +114,6 @@
        <property name="headerHidden">
         <bool>true</bool>
        </property>
-       <attribute name="headerVisible">
-        <bool>false</bool>
-       </attribute>
        <attribute name="headerVisible">
         <bool>false</bool>
        </attribute>
@@ -295,6 +293,11 @@
   <action name="menu_import_img">
    <property name="text">
     <string>Import graphics...</string>
+   </property>
+  </action>
+  <action name="menu_file_new_tileset">
+   <property name="text">
+    <string>New Tileset File...</string>
    </property>
   </action>
  </widget>
@@ -590,6 +593,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menu_file_new_tileset</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>NewTilesetFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>643</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <designerdata>
   <property name="gridDeltaX">
@@ -625,5 +644,6 @@
   <slot>ImportScr()</slot>
   <slot>BuildOptions()</slot>
   <slot>ImportImage()</slot>
+  <slot>NewTilesetFile()</slot>
  </slots>
 </ui>
