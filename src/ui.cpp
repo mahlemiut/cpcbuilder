@@ -711,6 +711,7 @@ void ui_main::SaveFileAs()
 	filename = QFileDialog::getSaveFileName(this,tr("Save File As..."),"~/",tr("Source files (*.asm);;All Files (*.*)"));
 	if(filename.isEmpty())
 		return;
+	rename_project_file(subwin->get_filename(),filename);  // update project is one is loaded
 	subwin->set_filename(filename);
 	SaveFile();
 }
@@ -984,6 +985,49 @@ void ui_main::BuildOptions()
 	if(m_dlg_buildoptions->exec() == QDialog::Accepted)
 		m_current_project->set_output_filename(dlg_name->text());
 }
+
+// if file is part of the current project, then rename it.
+void ui_main::rename_project_file(QString oldname, QString filename)
+{
+	if(m_current_project != NULL)  // check if there is an open project first
+	{
+		project_file* pf = m_current_project->find_file(oldname);
+		if(pf != NULL)
+			pf->set_filename(filename);
+		redraw_project_tree();
+	}
+}
+
+void ui_main::redraw_project_tree()
+{
+	QList<project_file*>::iterator it;
+	QList<project_file*> lst = m_current_project->get_filelist();
+	tree_files->clear();
+	QTreeWidgetItem* item = new QTreeWidgetItem(QTreeWidgetItem::Type);
+	QFont font("Sans",14,QFont::Bold);
+	item->setText(0,m_current_project->get_name() + " files");
+	item->setToolTip(0,m_project_filename);
+	item->setFont(0,font);
+	tree_files->addTopLevelItem(item);
+	for(it=lst.begin();it!=lst.end();it++)
+	{
+		QString str = (*it)->get_filename();
+		if(QFile::exists(str))
+		{
+			QStringList split = str.split(QDir::separator());
+			QString shortname = split.last();
+			// update project file list
+			QTreeWidgetItem* item = tree_files->topLevelItem(0);
+			if(item == NULL)
+				return;  // this shouldn't happen
+			QTreeWidgetItem* child = new QTreeWidgetItem(item,QTreeWidgetItem::Type);
+			child->setText(0,shortname);
+			child->setToolTip(0,str);
+			item->addChild(child);
+		}
+	}
+}
+
 
 /*
  *  subclassed QMdiSubWindow, for document display
@@ -1434,7 +1478,6 @@ void ui_QMdiSubWindow::closeEvent(QCloseEvent* event)
 }
 
 // subclassed syntax highlighter object
-
 highlighter::highlighter(QTextDocument* parent) :
 	QSyntaxHighlighter(parent)
 {

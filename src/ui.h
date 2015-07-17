@@ -65,6 +65,8 @@ public:
 	ui_QMdiSubWindow* CreateWindowASCII();
 	bool check_for_open_file(QString filename);
 	void remove_file(QString filename);
+	void rename_project_file(QString oldname, QString filename);
+	void redraw_project_tree();
 
 public slots:
 	void NewProject();
