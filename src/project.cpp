@@ -40,11 +40,6 @@ project_file::~project_file()
 
 void project_file::set_filename(QString filename)
 {
-	QStringList ext = filename.split(".");
-	if(ext.last() == "asm")
-		m_filetype = PROJECT_FILE_SOURCE_ASM;
-	else
-		m_filetype = PROJECT_FILE_BINARY;
 	m_filename = filename;
 }
 
