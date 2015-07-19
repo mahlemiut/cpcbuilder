@@ -56,7 +56,7 @@ public:
 	QString get_name() { return m_name; }
 	void set_name(QString name) { m_name = name; }
 	QList<project_file*> get_filelist() { return m_filelist; }
-	void xml_filelist(QXmlStreamWriter* stream);
+	void xml_filelist(QXmlStreamWriter* stream, QDir curr);
 	bool add_file(QString filename);
 	bool add_file(project_file* file);
 	bool add_gfx_file(QString filename, int width, int height);

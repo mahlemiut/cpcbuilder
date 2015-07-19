@@ -117,14 +117,14 @@ bool project::check_for_file(QString filename)
 	return false;
 }
 
-void project::xml_filelist(QXmlStreamWriter* stream)
+void project::xml_filelist(QXmlStreamWriter* stream, QDir curr)
 {
 	QList<project_file*>::iterator it;
 
 	for(it=m_filelist.begin();it!=m_filelist.end();it++)
 	{
 		stream->writeStartElement("file");
-		stream->writeAttribute("name",(*it)->get_filename());
+		stream->writeAttribute("name",curr.relativeFilePath((*it)->get_filename()));
 		if((*it)->get_filetype() == PROJECT_FILE_SOURCE_ASM)
 		{
 			stream->writeAttribute("type","asm");
