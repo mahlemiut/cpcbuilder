@@ -62,6 +62,10 @@ void ui_main::NewProject()
 		m_current_project = new project(name,fname);
 		if(m_current_project == NULL)
 			return;
+		m_project_filename = fname;
+		QString fpath(m_project_filename.section(QDir::separator(),0,-2));
+		m_oldpath = QDir::current();
+		QDir::setCurrent(fpath);
 		tree_files->clear();
 		QTreeWidgetItem* item = new QTreeWidgetItem(QTreeWidgetItem::Type);
 		QFont font("Sans",14,QFont::Bold);
@@ -83,7 +87,6 @@ void ui_main::OpenProject()
 	m_project_filename = QFileDialog::getOpenFileName(this,tr("Open Project..."),"~/",tr("Projects (*.cpc);;All Files (*.*)"));
 	QString fname;
 	QString fpath(m_project_filename.section(QDir::separator(),0,-2));
-	QDir oldpath(QDir::current());
 
 	if(m_project_filename.isEmpty())
 		return;
@@ -92,11 +95,8 @@ void ui_main::OpenProject()
 		CloseProject();
 
 	QFile f(m_project_filename);
-	{
-		QMessageBox msg(QMessageBox::Warning,"Test","Filename: " + m_project_filename + " Oldpath: "+oldpath.path()+" Projectpath: "+fpath,QMessageBox::Ok);
-		msg.exec();
-	}
 	f.open(QFile::ReadOnly);
+	m_oldpath = QDir::current();
 	QDir::setCurrent(fpath);
 	QXmlStreamReader stream(&f);
 	stream.readNextStartElement();
@@ -123,10 +123,6 @@ void ui_main::OpenProject()
 			{
 				filelist.append(attr.value("name").toString());
 				fname = attr.value("name").toString();
-			}
-			{
-				QMessageBox msg(QMessageBox::Warning,"Test","Filename: " + fname,QMessageBox::Ok);
-				msg.exec();
 			}
 			project_file* pfile = new project_file(fname);
 			if(attr.hasAttribute("type"))
@@ -255,7 +251,6 @@ void ui_main::OpenProject()
 	menu_project_close->setEnabled(true);
 	menu_project_build->setEnabled(true);
 	menu_project_buildoptions->setEnabled(true);
-	QDir::setCurrent(oldpath.path());
 }
 
 void ui_main::SaveProject()
@@ -291,6 +286,7 @@ void ui_main::CloseProject()
 	SaveProject();
 	tree_files->clear();
 	delete(m_current_project);
+	QDir::setCurrent(m_oldpath.path());  // restore previous working directory
 	m_current_project = NULL;
 	menu_project_close->setEnabled(false);
 	menu_project_build->setEnabled(false);
@@ -333,14 +329,7 @@ void ui_main::AddToProject()
 void ui_main::BuildProject()
 {
 	if(m_current_project != NULL)
-	{
-		QString fpath(m_project_filename.section(QDir::separator(),0,-2));
-		QDir oldpath(QDir::current());
-
-		QDir::setCurrent(fpath);
 		m_current_project->build(text_console);
-		QDir::setCurrent(oldpath.path());
-	}
 }
 
 ui_QMdiSubWindow* ui_main::CreateWindow(int doctype)
@@ -1023,8 +1012,6 @@ void ui_main::redraw_project_tree()
 {
 	QList<project_file*>::iterator it;
 	QList<project_file*> lst = m_current_project->get_filelist();
-	QString fpath(m_project_filename.section(QDir::separator(),0,-2));
-	QDir oldpath(QDir::current());
 	tree_files->clear();
 	QTreeWidgetItem* item = new QTreeWidgetItem(QTreeWidgetItem::Type);
 	QFont font("Sans",14,QFont::Bold);
@@ -1032,7 +1019,6 @@ void ui_main::redraw_project_tree()
 	item->setToolTip(0,m_project_filename);
 	item->setFont(0,font);
 	tree_files->addTopLevelItem(item);
-	QDir::setCurrent(fpath);
 	for(it=lst.begin();it!=lst.end();it++)
 	{
 		QString str = (*it)->get_filename();
@@ -1047,7 +1033,6 @@ void ui_main::redraw_project_tree()
 		child->setToolTip(0,str);
 		item->addChild(child);
 	}
-	QDir::setCurrent(oldpath.path());
 }
 
 

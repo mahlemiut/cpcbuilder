@@ -106,6 +106,7 @@ private:
 	QUiLoader loader;
 	highlighter* syntax;
 	QAction* palmenu;
+	QDir m_oldpath;
 };
 
 class ui_QMdiSubWindow : public QMdiSubWindow
