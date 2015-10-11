@@ -53,6 +53,7 @@
     <addaction name="separator"/>
     <addaction name="menu_file_import_scr"/>
     <addaction name="menu_import_img"/>
+    <addaction name="menu_import_tileset"/>
     <addaction name="separator"/>
     <addaction name="menu_file_exit"/>
    </widget>
@@ -298,6 +299,11 @@
   <action name="menu_file_new_tileset">
    <property name="text">
     <string>New Tileset File...</string>
+   </property>
+  </action>
+  <action name="menu_import_tileset">
+   <property name="text">
+    <string>Import Tileset...</string>
    </property>
   </action>
  </widget>
@@ -609,6 +615,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menu_import_tileset</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ImportTileset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>643</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <designerdata>
   <property name="gridDeltaX">
@@ -645,5 +667,6 @@
   <slot>BuildOptions()</slot>
   <slot>ImportImage()</slot>
   <slot>NewTilesetFile()</slot>
+  <slot>ImportTileset()</slot>
  </slots>
 </ui>

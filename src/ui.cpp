@@ -936,6 +936,8 @@ void ui_main::ImportImage()
 	// Import Qt supported image and convert to CPC data
 	QString filename;
 	QStringList filelist;
+
+	// create file dialog and add mode selection to it
 	QFileDialog dlg(this);
 	dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("Image files (*.bmp *.png *.gif *.jpg *.jpeg *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm *.scr);;All Files (*.*)"));
@@ -949,6 +951,7 @@ void ui_main::ImportImage()
 	dlg_combo->addItem(tr("Mode 2"));
 	dlg_layout->addWidget(dlg_combo);
 
+	// show file dialog
 	if(dlg.exec())
 	{
 		int mode;
@@ -970,6 +973,95 @@ void ui_main::ImportImage()
 			return;
 		}
 		subwin->setWindowTitle("Graphics Editor (Linear) - " + shortname);
+	}
+}
+
+void ui_main::ImportTileset()
+{
+	// Import Qt supported image and convert to a tileset
+	QString filename;
+	QStringList filelist;
+
+	// create file dialog and add mode selection to it
+	QFileDialog dlg(this);
+	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setNameFilter(tr("Image files (*.bmp *.png *.gif *.jpg *.jpeg *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm *.scr);;All Files (*.*)"));
+	QLayout* dlg_layout = dlg.layout();
+	QLabel* dlg_label = new QLabel;
+	dlg_label->setText(tr("Import tileset as:"));
+	dlg_layout->addWidget(dlg_label);
+	QComboBox* dlg_combo = new QComboBox;
+	dlg_combo->addItem(tr("Mode 0"));
+	dlg_combo->addItem(tr("Mode 1"));
+	dlg_combo->addItem(tr("Mode 2"));
+	dlg_layout->addWidget(dlg_combo);
+
+	// create a quick and dirty tile dimension dialog, since it doesn't fit well on the file dialog's layout
+	QDialog dlg_size(this);
+	QHBoxLayout* dlg_size_layout = new QHBoxLayout;
+	QLabel* dlg_label2 = new QLabel;
+	dlg_label2->setText(tr("Tile size:"));
+	dlg_size_layout->addWidget(dlg_label2);
+	QSpinBox* dlg_spin_width = new QSpinBox;
+	dlg_spin_width->setMinimum(2);
+	dlg_spin_width->setMaximum(64);
+	dlg_spin_width->setSingleStep(2);
+	dlg_spin_width->setValue(8);
+	dlg_size_layout->addWidget(dlg_spin_width);
+	QLabel* dlg_label3 = new QLabel;
+	dlg_label3->setText(tr("x"));
+	dlg_size_layout->addWidget(dlg_label3);
+	QSpinBox* dlg_spin_height = new QSpinBox;
+	dlg_spin_height->setMinimum(1);
+	dlg_spin_height->setMaximum(64);
+	dlg_spin_height->setSingleStep(1);
+	dlg_spin_height->setValue(8);
+	dlg_size_layout->addWidget(dlg_spin_height);
+	QDialogButtonBox* dlg_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+	connect(dlg_buttons, SIGNAL(accepted()), &dlg_size, SLOT(accept()));
+	connect(dlg_buttons, SIGNAL(rejected()), &dlg_size, SLOT(reject()));
+	dlg_size_layout->addWidget(dlg_buttons);
+	dlg_size.setLayout(dlg_size_layout);
+
+	// show file dialog
+	if(dlg.exec())
+	{
+		int mode;
+
+
+		filelist = dlg.selectedFiles();
+		filename = filelist.first();
+		if(filename.isEmpty())
+			return;
+		if(check_for_open_file(filename))
+			return;
+
+		mode = dlg_combo->currentIndex();
+		switch(mode)
+		{
+		default:
+		case 3:
+		case 0:	dlg_spin_width->setMinimum(2); dlg_spin_width->setSingleStep(2); break;
+		case 1:	dlg_spin_width->setMinimum(4); dlg_spin_width->setSingleStep(4); break;
+		case 2:	dlg_spin_width->setMinimum(8); dlg_spin_width->setSingleStep(8); break;
+		}
+		// show tile dimension dialog, stop here if cancelled
+		if(!dlg_size.exec())
+			return;
+
+		ui_QMdiSubWindow* subwin = CreateWindowTileset();
+		QStringList split = filename.split(QDir::separator());
+		QString shortname = split.last();
+
+		QMessageBox msg(QMessageBox::Critical,"Unimplemented","Importing a tileset is currently unimplemented",QMessageBox::Ok);
+		msg.exec();
+
+		if(subwin->import_tileset(filename,mode,dlg_spin_width->value(),dlg_spin_height->value()) == false)
+		{
+			subwin->close();  // close window if import fails.
+			return;
+		}
+		subwin->setWindowTitle("Tile editor - " + shortname);
 	}
 }
 
@@ -1391,15 +1483,15 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 
 bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 {
-	imageconvert conv(filename);
+	imageconvert conv(filename,mode);
 	unsigned char* buffer;
-	int size;
+	unsigned int size;
 	gfxeditor* gfx = dynamic_cast<gfxeditor*>(widget());
 
 	// TODO: add options
 
 	size = conv.calculate_size(mode);
-	buffer = (unsigned char*)malloc(size);  // should be a decent enough size
+	buffer = (unsigned char*)malloc(size);
 	memset(buffer,0,size);
 	if(!conv.convert(buffer,size,mode))
 	{
@@ -1414,6 +1506,39 @@ bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 		gfx->set_format_screen();
 		gfx->set_data(buffer,size);
 		for(int x=0;x<4;x++)
+			gfx->set_pen(x,conv.get_colour(x));
+		m_filename = filename;
+		return true;
+	}
+
+	return false;
+}
+
+bool ui_QMdiSubWindow::import_tileset(QString filename, int mode, int width, int height)
+{
+	tileconvert conv(filename,mode);
+	unsigned char* buffer;
+	unsigned int size;
+	gfxeditor* gfx = dynamic_cast<gfxeditor*>(widget());
+
+	// TODO: add options
+
+	size = conv.calculate_size(mode,width,height); // TODO
+	buffer = (unsigned char*)malloc(size);
+	memset(buffer,0,size);
+	if(!conv.convert(buffer,size,mode,width,height)) // TODO
+	{
+		// failed
+		delete(buffer);
+		return false;
+	}
+	else
+	{
+		// success
+		gfx->set_size(conv.get_tile_width(),conv.get_tile_height());
+		gfx->set_format_linear();
+		gfx->set_data(buffer,size);
+		for(int x=0;x<16;x++)
 			gfx->set_pen(x,conv.get_colour(x));
 		m_filename = filename;
 		return true;

@@ -90,6 +90,7 @@ public slots:
 	void ImportPalPlus();
 	void ImportScr();
 	void ImportImage();
+	void ImportTileset();
 	void TogglePal();
 	void ExportPalClip();
 	void BuildOptions();
@@ -126,6 +127,7 @@ public:
 	bool import_pal_12bit(QString filename);
 	bool import_scr(QString filename);
 	bool import_image(QString filename, int mode);
+	bool import_tileset(QString filename, int mode, int width, int height);
 	bool toggle_pal();
 	void export_pal_to_clipboard();  // store palette in clipboard as a DEFB statement
 	int get_doctype() { return m_doctype; }
