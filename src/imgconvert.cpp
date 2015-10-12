@@ -347,16 +347,17 @@ bool tileconvert::convert_mode1(unsigned char* buffer, unsigned int buffer_size,
 	unsigned int size;
 	int x,y;
 	unsigned int ptr = 0;
+	int tilenum_x;
+	int tilenum_y;
 
 	// set width/height
 	m_width = m_image.width() / 4;
 	m_height = m_image.height();
+	m_tilewidth = width / 4;
+	m_tileheight = height;
 
 	// determine if we have a buffer large enough
-	size = m_width * m_height;  // 2 pixels per byte
-
-	// for testing
-	//m_image.save("test.png","PNG");
+	size = calculate_size(1,width,height);
 
 	if(size > buffer_size)
 	{
@@ -365,30 +366,40 @@ bool tileconvert::convert_mode1(unsigned char* buffer, unsigned int buffer_size,
 		return false;  // size is greater than the buffer provided
 	}
 
-	for(y=0;y<m_image.height();y++)  // scanline
+	for(tilenum_y=0;tilenum_y<m_height;tilenum_y+=height)
 	{
-		for(x=0;x<m_image.width();x+=4)  // image pixel
+		for(tilenum_x=0;tilenum_x<m_width;tilenum_x+=width)
 		{
-			unsigned char byte;
-			unsigned char res;
-			buffer[ptr] = 0;
-			byte = m_image.pixelIndex(x,y);
-			res = ((byte & 0x02) << 2) | ((byte & 0x01) << 7);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+1,y);
-			res = ((byte & 0x02) << 1) | ((byte & 0x01) << 6);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+2,y);
-			res = ((byte & 0x02)) | ((byte & 0x01) << 5);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+3,y);
-			res = ((byte & 0x02) >> 1) | ((byte & 0x01) << 4);
-			buffer[ptr] |= res;
-			ptr++;
+			// per tile
+			for(y=0;y<height;y++)  // scanline
+			{
+				for(x=0;x<width;x+=4)  // image pixel
+				{
+					unsigned char byte;
+					unsigned char res;
+					buffer[ptr] = 0;
+					byte = m_image.pixelIndex(tilenum_x+x,tilenum_y+y);
+					res = ((byte & 0x02) << 2) | ((byte & 0x01) << 7);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+1,tilenum_y+y);
+					res = ((byte & 0x02) << 1) | ((byte & 0x01) << 6);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+2,tilenum_y+y);
+					res = ((byte & 0x02)) | ((byte & 0x01) << 5);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+3,tilenum_y+y);
+					res = ((byte & 0x02) >> 1) | ((byte & 0x01) << 4);
+					buffer[ptr] |= res;
+					ptr++;
+					if(ptr >= buffer_size)
+					{
+						QMessageBox msg(QMessageBox::Critical,"Import error",QString("Buffer overflow!"),QMessageBox::Ok);
+						msg.exec();
+						return false;  // buffer overflow
+					}
+				}
+			}
 		}
-		ptr = (y / 8) * m_width;
-		ptr += 0x800 * (y % 8);
-		ptr &= 0x3fff;
 	}
 	return true;
 }
@@ -398,16 +409,17 @@ bool tileconvert::convert_mode2(unsigned char* buffer, unsigned int buffer_size,
 	unsigned int size;
 	int x,y;
 	unsigned int ptr = 0;
+	int tilenum_x;
+	int tilenum_y;
 
 	// set width/height
 	m_width = m_image.width() / 8;
 	m_height = m_image.height();
+	m_tilewidth = width / 8;
+	m_tileheight = height;
 
 	// determine if we have a buffer large enough
-	size = m_width * m_height;  // 2 pixels per byte
-
-	// for testing
-	//m_image.save("test.png","PNG");
+	size = calculate_size(2,width,height);
 
 	if(size > buffer_size)
 	{
@@ -416,42 +428,52 @@ bool tileconvert::convert_mode2(unsigned char* buffer, unsigned int buffer_size,
 		return false;  // size is greater than the buffer provided
 	}
 
-	for(y=0;y<m_image.height();y++)  // scanline
+	for(tilenum_y=0;tilenum_y<m_height;tilenum_y+=height)
 	{
-		for(x=0;x<m_image.width();x+=8)  // image pixel
+		for(tilenum_x=0;tilenum_x<m_width;tilenum_x+=width)
 		{
-			unsigned char byte;
-			unsigned char res;
-			buffer[ptr] = 0;
-			byte = m_image.pixelIndex(x,y);
-			res = ((byte & 0x01) << 7);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+1,y);
-			res = ((byte & 0x01) << 6);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+2,y);
-			res = ((byte & 0x01) << 5);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+3,y);
-			res = ((byte & 0x01) << 4);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+4,y);
-			res = ((byte & 0x01) << 3);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+5,y);
-			res = ((byte & 0x01) << 2);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+6,y);
-			res = ((byte & 0x01) << 1);
-			buffer[ptr] |= res;
-			byte = m_image.pixelIndex(x+7,y);
-			res = ((byte & 0x01));
-			buffer[ptr] |= res;
-			ptr++;
+			// per tile
+			for(y=0;y<height;y++)  // scanline
+			{
+				for(x=0;x<width;x+=8)  // image pixel
+				{
+					unsigned char byte;
+					unsigned char res;
+					buffer[ptr] = 0;
+					byte = m_image.pixelIndex(tilenum_x+x,tilenum_y+y);
+					res = ((byte & 0x01) << 7);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+1,tilenum_y+y);
+					res = ((byte & 0x01) << 6);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+2,tilenum_y+y);
+					res = ((byte & 0x01) << 5);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+3,tilenum_y+y);
+					res = ((byte & 0x01) << 4);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+4,tilenum_y+y);
+					res = ((byte & 0x01) << 3);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+5,tilenum_y+y);
+					res = ((byte & 0x01) << 2);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+6,tilenum_y+y);
+					res = ((byte & 0x01) << 1);
+					buffer[ptr] |= res;
+					byte = m_image.pixelIndex(tilenum_x+x+7,tilenum_y+y);
+					res = ((byte & 0x01));
+					buffer[ptr] |= res;
+					ptr++;
+					if(ptr >= buffer_size)
+					{
+						QMessageBox msg(QMessageBox::Critical,"Import error",QString("Buffer overflow!"),QMessageBox::Ok);
+						msg.exec();
+						return false;  // buffer overflow
+					}
+				}
+			}
 		}
-		ptr = (y / 8) * m_width;
-		ptr += 0x800 * (y % 8);
-		ptr &= 0x3fff;
 	}
 	return true;
 }
