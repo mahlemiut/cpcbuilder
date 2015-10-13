@@ -1505,7 +1505,7 @@ bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 		gfx->set_size(80,200);//conv.get_width(),conv.get_height());
 		gfx->set_format_screen();
 		gfx->set_data(buffer,size);
-		for(int x=0;x<4;x++)
+		for(int x=0;x<16;x++)
 			gfx->set_pen(x,conv.get_colour(x));
 		m_filename = filename;
 		return true;

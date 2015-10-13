@@ -104,10 +104,10 @@ bool imageconvert::convert_mode0(unsigned char* buffer, unsigned int buffer_size
 			unsigned char res;
 			buffer[ptr] = 0;
 			byte = m_image.pixelIndex(x,y);
-			res = ((byte & 0x08) << 4) | ((byte & 0x04) << 3) | ((byte & 0x02) << 2) | ((byte & 0x01) << 1);
+			res = ((byte & 0x08) >> 2) | ((byte & 0x04) << 3) | ((byte & 0x02) << 2) | ((byte & 0x01) << 7);
 			buffer[ptr] |= res;
 			byte = m_image.pixelIndex(x+1,y);
-			res = ((byte & 0x08) << 3) | ((byte & 0x04) << 2) | ((byte & 0x02) << 1) | ((byte & 0x01));
+			res = ((byte & 0x08) >> 3) | ((byte & 0x04) << 2) | ((byte & 0x02) << 1) | ((byte & 0x01) << 6);
 			buffer[ptr] |= res;
 			ptr++;
 		}
@@ -323,10 +323,10 @@ bool tileconvert::convert_mode0(unsigned char* buffer, unsigned int buffer_size,
 					unsigned char res;
 					buffer[ptr] = 0;
 					byte = m_image.pixelIndex(tilenum_x+x,tilenum_y+y);
-					res = ((byte & 0x08) << 4) | ((byte & 0x04) << 3) | ((byte & 0x02) << 2) | ((byte & 0x01) << 1);
+					res = ((byte & 0x08) >> 2) | ((byte & 0x04) << 3) | ((byte & 0x02) << 2) | ((byte & 0x01) << 7);
 					buffer[ptr] |= res;
 					byte = m_image.pixelIndex(tilenum_x+x+1,tilenum_y+y);
-					res = ((byte & 0x08) << 3) | ((byte & 0x04) << 2) | ((byte & 0x02) << 1) | ((byte & 0x01));
+					res = ((byte & 0x08) >> 3) | ((byte & 0x04) << 2) | ((byte & 0x02) << 1) | ((byte & 0x01) << 6);
 					buffer[ptr] |= res;
 					ptr++;
 					if(ptr >= buffer_size)
