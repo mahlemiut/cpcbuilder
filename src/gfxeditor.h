@@ -212,6 +212,9 @@ public:
 	~tileeditor();
 	virtual void set_data(unsigned char* data, int size);
 	virtual void plot(int x, int y);  // plot a point in the graphic using the currently selected pen
+	void set_tile_num(int count) { m_tile_total = count; }
+	int get_tile_num() { return m_tile_total; }
+	void calculate_tiles();  // calculate the number of tiles that the data represents
 
 public slots:
 	void current_tile_changed(int val) { m_tile_current = val; m_frame_gfx->set_tile(val); draw_scene(); }
@@ -219,8 +222,6 @@ public slots:
 	void remove_gfx_tile();
 
 private:
-	void calculate_tiles();  // calculate the number of tiles that the data represents
-	int get_tile_num() { return m_tile_total; }
 	unsigned int m_tile_current;  // currently displayed graphic
 	unsigned int m_tile_total;  // total number of graphics
 

@@ -86,6 +86,15 @@ bool project::add_gfx_file(QString filename, int width, int height)
 	return true;
 }
 
+bool project::add_tileset_file(QString filename, int width, int height)
+{
+	project_file* pfile = new project_file(filename);
+	pfile->set_filetype(PROJECT_FILE_TILESET);
+	pfile->set_size(width,height);
+	m_filelist.append(pfile);
+	return true;
+}
+
 bool project::remove_file(QString filename)
 {
 	QList<project_file*>::iterator it;
@@ -140,6 +149,14 @@ void project::xml_filelist(QXmlStreamWriter* stream, QDir curr)
 		if((*it)->get_filetype() == PROJECT_FILE_GRAPHICS)
 		{
 			stream->writeAttribute("type","gfx");
+			stream->writeAttribute("load",QString::number((*it)->get_load_address(),16));
+			stream->writeAttribute("exec",QString::number((*it)->get_exec_address(),16));
+			stream->writeAttribute("width",QString::number((*it)->get_width(),10));
+			stream->writeAttribute("height",QString::number((*it)->get_height(),10));
+		}
+		if((*it)->get_filetype() == PROJECT_FILE_TILESET)
+		{
+			stream->writeAttribute("type","tileset");
 			stream->writeAttribute("load",QString::number((*it)->get_load_address(),16));
 			stream->writeAttribute("exec",QString::number((*it)->get_exec_address(),16));
 			stream->writeAttribute("width",QString::number((*it)->get_width(),10));
@@ -237,7 +254,8 @@ int project::build(QPlainTextEdit* output)
 				output->appendPlainText(QString(">>> Adding %1 to virtual disk, Load: 0x%2, Exec: 0x%3\n").arg(dir.absolutePath()+QDir::separator()+basename+".bin").arg(l).arg(e));
 			}
 		}
-		if((*it)->get_filetype() == PROJECT_FILE_BINARY || (*it)->get_filetype() == PROJECT_FILE_GRAPHICS)
+		if((*it)->get_filetype() == PROJECT_FILE_BINARY || (*it)->get_filetype() == PROJECT_FILE_GRAPHICS
+				|| (*it)->get_filetype() == PROJECT_FILE_TILESET)
 		{
 			// add file to disk image
 			dsk.add_file((*it)->get_filename(), (*it)->get_load_address(),(*it)->get_exec_address());

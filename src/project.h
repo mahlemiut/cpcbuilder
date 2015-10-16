@@ -60,6 +60,7 @@ public:
 	bool add_file(QString filename);
 	bool add_file(project_file* file);
 	bool add_gfx_file(QString filename, int width, int height);
+	bool add_tileset_file(QString filename, int width, int height);
 	bool remove_file(QString filename);
 	bool check_for_file(QString filename);
 	project_file* find_file(QString file);

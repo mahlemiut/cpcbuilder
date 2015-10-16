@@ -184,6 +184,24 @@ void ui_main::OpenProject()
 					pfile->set_filename(attr.value("name").toString());
 					m_current_project->add_file(pfile);
 				}
+				if(attr.value("type").toString() == "tileset")
+				{
+					pfile->set_filetype(PROJECT_FILE_TILESET);
+					if(!check_for_open_file(pfile->get_filename()))
+					{
+						QStringList split = pfile->get_filename().split(QDir::separator());
+						ui_QMdiSubWindow* subwin = CreateWindowTileset();
+						subwin->load_tileset(pfile->get_filename(),attr.value("width").toString().toInt(),attr.value("height").toString().toInt());
+						pfile->set_size(attr.value("width").toString().toInt(),attr.value("height").toString().toInt());
+						subwin->setWindowTitle("Tileset Editor - " + split.last());
+					}
+					if(attr.hasAttribute("load"))
+						pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
+					if(attr.hasAttribute("exec"))
+						pfile->set_exec_address(attr.value("exec").toString().toUInt(0,16));
+					pfile->set_filename(attr.value("name").toString());
+					m_current_project->add_file(pfile);
+				}
 				if(attr.value("type").toString() == "ascii")
 				{
 					pfile->set_filetype(PROJECT_FILE_ASCII);
@@ -312,6 +330,12 @@ void ui_main::AddToProject()
 		gfxeditor* gfx = dynamic_cast<gfxeditor*>(subwin->widget());
 		if(gfx != NULL)
 			m_current_project->add_gfx_file(fname,gfx->get_width(),gfx->get_height());
+	}
+	else if(subwin->get_doctype() == PROJECT_FILE_TILESET)
+	{
+		tileeditor* gfx = dynamic_cast<tileeditor*>(subwin->widget());
+		if(gfx != NULL)
+			m_current_project->add_tileset_file(fname,gfx->get_width(),gfx->get_height());
 	}
 	else
 		m_current_project->add_file(fname);
@@ -597,6 +621,7 @@ void ui_main::OpenFile()
 	dlg_combo->addItem(tr("Binary data"));
 	dlg_combo->addItem(tr("Graphics"));
 	dlg_combo->addItem(tr("ASCII"));
+	dlg_combo->addItem(tr("Tileset"));
 	dlg_layout->addWidget(dlg_combo);
 	dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("Source files (*.asm);;Binary files (*.bin);;Graphical data (*.gfx *.bin);;ASCII data (*.txt);;All Files (*.*)"));
@@ -673,6 +698,26 @@ void ui_main::OpenFile()
 			}
 			subwin->setWindowTitle("ASCII file - " + shortname);
 		}
+		else if(dlg_combo->currentIndex() == 4)  // Tileset
+		{
+			filelist = dlg.selectedFiles();
+			filename = filelist.first();
+			if(filename.isEmpty())
+				return;
+			if(check_for_open_file(filename))
+				return;
+
+			ui_QMdiSubWindow* subwin = CreateWindowTileset();
+			QStringList split = filename.split(QDir::separator());
+			QString shortname = split.last();
+
+			if(subwin->load_tileset(filename) == false)
+			{
+				subwin->close();  // close window if load fails.
+				return;
+			}
+			subwin->setWindowTitle("Tileset Editor - " + shortname);
+		}
 	}
 }
 
@@ -707,6 +752,16 @@ void ui_main::SaveFile()
 		QAction* act = actlist[0];  // TODO: maybe there's a better way to actually search for a list item
 		act->setEnabled(true);
 		typestr = "Graphics Editor (Screen) - ";
+	}
+	else if(subwin->get_doctype() == PROJECT_FILE_TILESET)
+	{
+		subwin->save_tileset(filename);
+		// we have a set filename now, so enable the AddToProject menuitem on the current subwindow widget
+		tileeditor* widget = dynamic_cast<tileeditor*>(subwin->widget());
+		QList<QAction*> actlist = widget->actions();
+		QAction* act = actlist[0];  // TODO: maybe there's a better way to actually search for a list item
+		act->setEnabled(true);
+		typestr = "Tileset Editor - ";
 	}
 	QStringList split = filename.split(QDir::separator());
 	subwin->setWindowTitle(typestr + split.last());
@@ -1314,12 +1369,130 @@ bool ui_QMdiSubWindow::load_gfx(QString filename, int width, int height)
 	return true;  // TODO: error testing
 }
 
+bool ui_QMdiSubWindow::load_tileset(QString filename)
+{
+	if(m_doctype != PROJECT_FILE_TILESET)
+		return false;
+
+	QFile f(filename);
+	QUiLoader loader;
+	QFile uif(":/forms/ide_tilesize.ui");
+	QWidget* form;
+	unsigned char* data;
+
+	tileeditor* gfx = dynamic_cast<tileeditor*>(widget());
+	int fsize;
+	bool has_header;
+
+	uif.open(QFile::ReadOnly);
+	form = loader.load(&uif, this);
+	uif.close();
+
+	if(form)
+	{
+		QDialog* dlg = dynamic_cast<QDialog*>(form);
+		if(dlg)
+		{
+			// add option to skip AMSDOS header
+			QGridLayout* dlg_layout = dynamic_cast<QGridLayout*>(dlg->layout());
+			QCheckBox* dlg_header = new QCheckBox(dlg);
+			dlg_header->setText("File has AMSDOS header");
+			dlg_header->setChecked(false);
+			dlg_layout->addWidget(dlg_header,2,0,1,2);
+			// run dialog
+			if(dlg->exec() == QDialog::Rejected)
+				return false;
+			QLineEdit* dlg_width = qFindChild<QLineEdit*>(this,"dlg_tile_width");
+			QLineEdit* dlg_height = qFindChild<QLineEdit*>(this,"dlg_tile_height");
+			gfx->set_size(dlg_width->text().toUInt(0,10),dlg_height->text().toUInt(0,10));
+			if(dlg_header->isChecked())
+				has_header = true;
+			else
+				has_header = false;
+		}
+		else
+			return false;
+	}
+	else
+		return false;
+
+	m_modified = false;
+
+	set_filename(filename);
+	f.open(QFile::ReadOnly);
+	if(has_header)
+	{
+		fsize = f.size() - 0x80;
+		data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
+		f.seek(0x80);  // skip AMSDOS header
+		f.read((char*)data,fsize);
+		m_modified = true;  // files are not saved with AMSDOS header, so it is effectively modified.
+	}
+	else
+	{
+		fsize = f.size();
+		data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
+		f.read((char*)data,fsize);
+	}
+	f.close();
+
+	gfx->set_data(data,fsize);
+	gfx->draw_scene();
+
+	return true;  // TODO: error testing
+}
+
+bool ui_QMdiSubWindow::load_tileset(QString filename, int width, int height)
+{
+	if(m_doctype != PROJECT_FILE_TILESET)
+		return false;
+
+	QFile f(filename);
+	unsigned char* data;
+
+	tileeditor* gfx = dynamic_cast<tileeditor*>(widget());
+	int fsize;
+
+	gfx->set_size(width,height);
+	set_filename(filename);
+	f.open(QFile::ReadOnly);
+	fsize = f.size();
+	data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
+	f.read((char*)data,fsize);
+	f.close();
+
+	gfx->set_data(data,fsize);
+	gfx->calculate_tiles();
+	gfx->draw_scene();
+
+	m_modified = false;
+
+	return true;  // TODO: error testing
+}
+
 bool ui_QMdiSubWindow::save_gfx(QString filename)
 {
 	if(m_doctype != PROJECT_FILE_GRAPHICS)
 		return false;
 
 	gfxeditor* gfx = dynamic_cast<gfxeditor*>(widget());
+	uint size = gfx->get_datasize();
+
+	QFile f(filename);
+	f.open(QFile::WriteOnly);
+	QDataStream out(&f);
+	out.writeRawData((char*)gfx->get_data(),size);
+	f.close();
+
+	return true;
+}
+
+bool ui_QMdiSubWindow::save_tileset(QString filename)
+{
+	if(m_doctype != PROJECT_FILE_TILESET)
+		return false;
+
+	tileeditor* gfx = dynamic_cast<tileeditor*>(widget());
 	uint size = gfx->get_datasize();
 
 	QFile f(filename);

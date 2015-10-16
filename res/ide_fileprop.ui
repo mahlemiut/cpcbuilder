@@ -102,6 +102,16 @@
        <string>ASCII</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>Tileset</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>CPC+ Sprites</string>
+      </property>
+     </item>
     </widget>
    </item>
   </layout>

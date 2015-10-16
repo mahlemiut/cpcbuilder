@@ -122,7 +122,10 @@ public:
 	bool load_binary(QString filename);
 	bool load_gfx(QString filename);
 	bool load_gfx(QString filename, int width, int height);
+	bool load_tileset(QString filename);
+	bool load_tileset(QString filename, int width, int height);
 	bool save_gfx(QString filename);
+	bool save_tileset(QString filename);
 	bool import_pal(QString filename);
 	bool import_pal_12bit(QString filename);
 	bool import_scr(QString filename);
