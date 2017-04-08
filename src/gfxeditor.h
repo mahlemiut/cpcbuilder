@@ -9,6 +9,7 @@
 #define GFXEDITOR_H_
 
 #include <QtGui>
+#include <QtWidgets>
 
 enum
 {

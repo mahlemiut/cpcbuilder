@@ -2,8 +2,8 @@
 Basic Qt-based IDE for building Amstrad CPC assembly language programs
 
 
-Builds on Linux, with Qt 4.6 or later (Tested on Ubuntu)
-Should build on other Qt supported OSes also.
+Builds on Linux, with Qt 5.x
+Should build on other Qt5 supported OSes also.
 
 To build:
   qmake ide.pro

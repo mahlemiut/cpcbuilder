@@ -10,7 +10,7 @@
 #ifndef DSKBUILD_H_
 #define DSKBUILD_H_
 
-#include <QtGui>
+#include <QtWidgets>
 
 enum
 {

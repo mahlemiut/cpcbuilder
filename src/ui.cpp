@@ -55,7 +55,7 @@ void ui_main::NewProject()
 
 	if(ret == QDialog::Accepted && !fname.isEmpty())
 	{
-		QLineEdit* dlg_name = qFindChild<QLineEdit*>(this,"dlg_project_name");
+        QLineEdit* dlg_name = m_dlg_newproject->findChild<QLineEdit*>("dlg_project_name");
 
 		name = dlg_name->text();
 		// new project
@@ -585,8 +585,8 @@ void ui_main::NewTilesetFile()
 		{
 			if(dlg->exec() == QDialog::Rejected)
 				return;
-			QLineEdit* dlg_width = qFindChild<QLineEdit*>(dlg,"dlg_tile_width");
-			QLineEdit* dlg_height = qFindChild<QLineEdit*>(dlg,"dlg_tile_height");
+            QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
+            QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
 			w = dlg_width->text().toUInt(0,10);
 			h = dlg_height->text().toUInt(0,10);
 		}
@@ -915,9 +915,9 @@ void ui_main::EditProperties()
 		return;
 	if(!m_current_project->check_for_file(filename))
 		return;
-	QLineEdit* dlg_load = qFindChild<QLineEdit*>(this,"dlg_load_address");
-	QLineEdit* dlg_exec = qFindChild<QLineEdit*>(this,"dlg_exec_address");
-	QComboBox* dlg_type = qFindChild<QComboBox*>(this,"dlg_filetype");
+    QLineEdit* dlg_load = m_dlg_fileprop->findChild<QLineEdit*>("dlg_load_address");
+    QLineEdit* dlg_exec = m_dlg_fileprop->findChild<QLineEdit*>("dlg_exec_address");
+    QComboBox* dlg_type = m_dlg_fileprop->findChild<QComboBox*>("dlg_filetype");
 
 	unsigned int load_addr,exec_addr,filetype;
 	filetype = m_current_project->get_filetype(filename);
@@ -1136,7 +1136,7 @@ void ui_main::ExportPalClip()
 
 void ui_main::BuildOptions()
 {
-	QLineEdit* dlg_name = qFindChild<QLineEdit*>(this,"dlg_build_filename");
+    QLineEdit* dlg_name = m_dlg_buildoptions->findChild<QLineEdit*>("dlg_build_filename");
 	dlg_name->clear();
 	dlg_name->insert(m_current_project->get_output_filename());
 	if(m_dlg_buildoptions->exec() == QDialog::Accepted)
@@ -1301,8 +1301,8 @@ bool ui_QMdiSubWindow::load_gfx(QString filename)
 			// run dialog
 			if(dlg->exec() == QDialog::Rejected)
 				return false;
-			QLineEdit* dlg_width = qFindChild<QLineEdit*>(this,"dlg_tile_width");
-			QLineEdit* dlg_height = qFindChild<QLineEdit*>(this,"dlg_tile_height");
+            QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
+            QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
 			gfx->set_size(dlg_width->text().toUInt(0,10),dlg_height->text().toUInt(0,10));
 			if(dlg_header->isChecked())
 				has_header = true;
@@ -1402,8 +1402,8 @@ bool ui_QMdiSubWindow::load_tileset(QString filename)
 			// run dialog
 			if(dlg->exec() == QDialog::Rejected)
 				return false;
-			QLineEdit* dlg_width = qFindChild<QLineEdit*>(this,"dlg_tile_width");
-			QLineEdit* dlg_height = qFindChild<QLineEdit*>(this,"dlg_tile_height");
+            QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
+            QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
 			gfx->set_size(dlg_width->text().toUInt(0,10),dlg_height->text().toUInt(0,10));
 			if(dlg_header->isChecked())
 				has_header = true;
@@ -1566,7 +1566,7 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 	gfxeditor* gfx = dynamic_cast<gfxeditor*>(widget());
 	unsigned char* data;
 	unsigned char* output;
-	int fsize;
+//	int fsize;
 
 	uif.open(QFile::ReadOnly);
 	form = loader.load(&uif, this);
@@ -1578,8 +1578,8 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 		if(dlg)
 		{
 			// add option to skip AMSDOS header
-			QLineEdit* dlg_width = qFindChild<QLineEdit*>(this,"dlg_tile_width");
-			QLineEdit* dlg_height = qFindChild<QLineEdit*>(this,"dlg_tile_height");
+            QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
+            QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
 			QGridLayout* dlg_layout = dynamic_cast<QGridLayout*>(dlg->layout());
 			QCheckBox* dlg_header = new QCheckBox(dlg);
 			dlg_header->setText("File has AMSDOS header");
@@ -1606,7 +1606,7 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 
 	QFile f(filename);
 	f.open(QFile::ReadOnly);
-	fsize = f.size();
+//	fsize = f.size();
 	data = (unsigned char*)malloc(16384);
 	output = (unsigned char*)malloc(16384);  // will be freed when the widget is closed, or when set_data is called again
 	m_modified = false;
@@ -1615,7 +1615,7 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 		f.seek(0x80);  // skip AMSDOS header
 		m_modified = true;
 	}
-	fsize = f.read((char*)data,16384);  // limit to 16kB
+//	fsize = f.read((char*)data,16384);  // limit to 16kB
 	f.close();
 
 	width = gfx->get_width();

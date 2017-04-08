@@ -8,7 +8,7 @@
 #ifndef UI_H_
 #define UI_H_
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtUiTools/QUiLoader>
 #include <list>
 #include "ui_ide_main.h"

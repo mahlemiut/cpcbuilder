@@ -11,6 +11,6 @@
 #include <QtGui>
 #include <QWidget>
 
-#define VER "CPC Builder 0.1.1 ("__DATE__")"
+#define VER "CPC Builder 0.2.0 (" __DATE__ ")"
 
 #endif /* MAIN_H_ */

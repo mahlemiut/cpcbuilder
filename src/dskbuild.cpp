@@ -112,11 +112,11 @@ bool dsk_builder::add_file(QString filename, unsigned int load, unsigned int ent
 	// set up fat entry
 	memset(&fat,0x00,sizeof(fat_entry));
 	for(x=0;x<filemain.length();x++)
-		fat.filename[x] = filemain.at(x).toUpper().toAscii();
+        fat.filename[x] = filemain.at(x).toUpper().toLatin1();
 	for(x=x;x<8;x++)
 		fat.filename[x] = 0x20;
 	for(x=0;x<fileext.length();x++)
-		fat.extension[x] = fileext.at(x).toUpper().toAscii();
+        fat.extension[x] = fileext.at(x).toUpper().toLatin1();
 	for(x=x;x<3;x++)
 		fat.extension[x] = 0x20;
 	// first extent number is zero, memset has set this for us
@@ -218,11 +218,11 @@ bool dsk_builder::add_ascii_file(QString filename)
 	// set up fat entry
 	memset(&fat,0x00,sizeof(fat_entry));
 	for(x=0;x<filemain.length();x++)
-		fat.filename[x] = filemain.at(x).toUpper().toAscii();
+        fat.filename[x] = filemain.at(x).toUpper().toLatin1();
 	for(x=x;x<8;x++)
 		fat.filename[x] = 0x20;
 	for(x=0;x<fileext.length();x++)
-		fat.extension[x] = fileext.at(x).toUpper().toAscii();
+        fat.extension[x] = fileext.at(x).toUpper().toLatin1();
 	for(x=x;x<3;x++)
 		fat.extension[x] = 0x20;
 	// first extent number is zero, memset has set this for us

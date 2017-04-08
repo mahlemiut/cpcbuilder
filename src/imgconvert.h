@@ -8,7 +8,7 @@
 #define IMGCONVERT_H_
 
 #include <stdio.h>
-#include <QtGui>
+#include <QtWidgets>
 #include <QString>
 #include <QImage>
 

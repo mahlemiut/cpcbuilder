@@ -8,7 +8,7 @@
 #ifndef BINEDITOR_H_
 #define BINEDITOR_H_
 
-#include <QtGui>
+#include <QtWidgets>
 
 class bineditor : public QFrame
 {

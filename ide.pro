@@ -1,5 +1,6 @@
 TEMPLATE	= app
-CONFIG		+= uitools
+QT		+= uitools
+QT              += widgets
 CONFIG		+= debug_and_release
 
 CONFIG(debug, debug|release) {
@@ -22,6 +23,5 @@ HEADERS		= src/main.h \
 			  src/dskbuild.h \
 			  src/bineditor.h \
 			  src/gfxeditor.h \
-			  src/imgconvert.h \
-			  ui_ide_main.h
+                          src/imgconvert.h
 RESOURCES	= res/iderc.qrc
