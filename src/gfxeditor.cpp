@@ -58,9 +58,10 @@ static const int cpc_colours[32][3] =
 
 gfxeditor::gfxeditor(QWidget* parent) :
 	QWidget(parent),
+    m_data(nullptr),
 	m_width(0),
 	m_height(0),
-	m_mode(1)
+    m_mode(1)
 {
 	unsigned char* paldata;
 	int x;
@@ -259,7 +260,10 @@ void gfxeditor::plot(int x, int y)
 		break;
 	}
 	if(loc < m_datasize)
-		m_data[loc] = (m_data[loc] &= ~mask) | col;
+    {
+        unsigned char data = m_data[loc];
+        m_data[loc] = (data &= ~mask) | col;
+    }
 }
 
 // draw a line
@@ -470,7 +474,10 @@ void tileeditor::plot(int x, int y)
 		break;
 	}
 	if(loc < m_datasize)
-		m_data[loc] = (m_data[loc] &= ~mask) | col;
+    {
+        unsigned char data = m_data[loc];
+        m_data[loc] = (data &= ~mask) | col;
+    }
 }
 
 
