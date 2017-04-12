@@ -5,6 +5,7 @@
 !/.gitignore
 !/ide.pro
 !/*.md
+*.dsk
 /debug
 /release
 
