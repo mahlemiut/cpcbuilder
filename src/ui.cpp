@@ -612,7 +612,8 @@ void ui_main::OpenFile()
 	QString filename;
 	QStringList filelist;
 	QFileDialog dlg(this);
-	QLayout* dlg_layout = dlg.layout();
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
+    QLayout* dlg_layout = dlg.layout();
 	QLabel* dlg_label = new QLabel;
 	dlg_label->setText(tr("Open As:"));
 	dlg_layout->addWidget(dlg_label);
@@ -831,7 +832,8 @@ void ui_main::ImportScr()
 	QString filename;
 	QStringList filelist;
 	QFileDialog dlg(this);
-	dlg.setFileMode(QFileDialog::ExistingFile);
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
+    dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("CPC screen data (*.scr);;All Files (*.*)"));
 	if(dlg.exec())
 	{
@@ -953,7 +955,8 @@ void ui_main::ImportPal()
 	QString filename;
 	QStringList filelist;
 	QFileDialog dlg(this);
-	dlg.setFileMode(QFileDialog::ExistingFile);
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
+    dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("Palette files (*.pal);;All Files (*.*)"));
 	if(dlg.exec())
 	{
@@ -972,7 +975,8 @@ void ui_main::ImportPalPlus()
 	QString filename;
 	QStringList filelist;
 	QFileDialog dlg(this);
-	dlg.setFileMode(QFileDialog::ExistingFile);
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
+    dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("Palette files (*.pal);;All Files (*.*)"));
 	if(dlg.exec())
 	{
@@ -994,6 +998,7 @@ void ui_main::ImportImage()
 
 	// create file dialog and add mode selection to it
 	QFileDialog dlg(this);
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
 	dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("Image files (*.bmp *.png *.gif *.jpg *.jpeg *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm *.scr);;All Files (*.*)"));
 	QLayout* dlg_layout = dlg.layout();
@@ -1039,7 +1044,8 @@ void ui_main::ImportTileset()
 
 	// create file dialog and add mode selection to it
 	QFileDialog dlg(this);
-	dlg.setFileMode(QFileDialog::ExistingFile);
+    dlg.setOption(QFileDialog::DontUseNativeDialog);
+    dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setNameFilter(tr("Image files (*.bmp *.png *.gif *.jpg *.jpeg *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm *.scr);;All Files (*.*)"));
 	QLayout* dlg_layout = dlg.layout();
 	QLabel* dlg_label = new QLabel;
