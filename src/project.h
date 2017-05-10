@@ -9,6 +9,7 @@
 #define PROJECT_H_
 
 #include <QtWidgets>
+#include "appsettings.h"
 
 enum
 {
@@ -50,7 +51,7 @@ private:
 class project
 {
 public:
-	project(QString name, QString filename);
+	project(QString name, QString filename, appsettings& stg);
 	~project();
 	QString get_filename() { return m_filename; }
 	QString get_name() { return m_name; }
@@ -79,6 +80,7 @@ private:
 	QString m_outfilename;  // filename of DSK to output to.
 	QList<project_file*> m_filelist;
 	bool m_built;  // build status (true if a build has been successful)
+	appsettings m_settings;
 };
 
 #endif /* PROJECT_H_ */

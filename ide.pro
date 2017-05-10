@@ -16,12 +16,14 @@ SOURCES		= src/main.cpp \
 			  src/dskbuild.cpp \
 			  src/bineditor.cpp \
 			  src/gfxeditor.cpp \
-			  src/imgconvert.cpp
+			  src/imgconvert.cpp \
+                          src/appsettings.cpp
 HEADERS		= src/main.h \
 			  src/ui.h \
 			  src/project.h \
 			  src/dskbuild.h \
 			  src/bineditor.h \
 			  src/gfxeditor.h \
-                          src/imgconvert.h
+                          src/imgconvert.h \
+                          src/appsettings.h
 RESOURCES	= res/iderc.qrc

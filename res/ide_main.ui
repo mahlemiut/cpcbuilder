@@ -36,12 +36,12 @@
      <x>0</x>
      <y>0</y>
      <width>1287</width>
-     <height>28</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="menu_file_new"/>
     <addaction name="menu_file_new_gfx"/>
@@ -55,6 +55,8 @@
     <addaction name="menu_import_img"/>
     <addaction name="menu_import_tileset"/>
     <addaction name="separator"/>
+    <addaction name="menu_assembler_settings"/>
+    <addaction name="separator"/>
     <addaction name="menu_file_exit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -65,14 +67,14 @@
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
-     <string>Window</string>
+     <string>Wi&amp;ndow</string>
     </property>
     <addaction name="menu_win_tile"/>
     <addaction name="menu_win_cascade"/>
    </widget>
    <widget class="QMenu" name="menuProject">
     <property name="title">
-     <string>Project</string>
+     <string>Pro&amp;ject</string>
     </property>
     <addaction name="menu_project_new"/>
     <addaction name="menu_project_open"/>
@@ -92,7 +94,7 @@
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
-    <string>Project Files</string>
+    <string>&amp;Project Files</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -133,7 +135,7 @@
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
-    <string>Output</string>
+    <string>&amp;Output</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -186,7 +188,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>New Project...</string>
+    <string>&amp;New Project...</string>
    </property>
   </action>
   <action name="menu_project_open">
@@ -194,7 +196,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Open Project...</string>
+    <string>&amp;Open Project...</string>
    </property>
   </action>
   <action name="menu_project_close">
@@ -202,12 +204,12 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Close Project...</string>
+    <string>&amp;Close Project...</string>
    </property>
   </action>
   <action name="menu_file_open">
    <property name="text">
-    <string>Open File...</string>
+    <string>&amp;Open File...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -215,7 +217,7 @@
   </action>
   <action name="menu_file_new">
    <property name="text">
-    <string>New ASM File...</string>
+    <string>&amp;New ASM File...</string>
    </property>
    <property name="toolTip">
     <string>New File</string>
@@ -226,22 +228,22 @@
   </action>
   <action name="menu_file_close">
    <property name="text">
-    <string>Close File</string>
+    <string>&amp;Close File</string>
    </property>
   </action>
   <action name="menu_file_exit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="menu_help_about">
    <property name="text">
-    <string>About...</string>
+    <string>&amp;About...</string>
    </property>
   </action>
   <action name="menu_file_save">
    <property name="text">
-    <string>Save File</string>
+    <string>&amp;Save File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -249,17 +251,17 @@
   </action>
   <action name="menu_file_saveas">
    <property name="text">
-    <string>Save File As...</string>
+    <string>Save &amp;File As...</string>
    </property>
   </action>
   <action name="menu_win_tile">
    <property name="text">
-    <string>Tile Windows</string>
+    <string>&amp;Tile Windows</string>
    </property>
   </action>
   <action name="menu_win_cascade">
    <property name="text">
-    <string>Cascade Windows</string>
+    <string>&amp;Cascade Windows</string>
    </property>
   </action>
   <action name="menu_project_build">
@@ -267,7 +269,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Build</string>
+    <string>&amp;Build</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
@@ -275,12 +277,12 @@
   </action>
   <action name="menu_file_new_gfx">
    <property name="text">
-    <string>New Graphics File...</string>
+    <string>New &amp;Graphics File...</string>
    </property>
   </action>
   <action name="menu_file_import_scr">
    <property name="text">
-    <string>Import SCR...</string>
+    <string>&amp;Import SCR...</string>
    </property>
   </action>
   <action name="menu_project_buildoptions">
@@ -288,28 +290,31 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Build Options...</string>
+    <string>&amp;Project Options...</string>
    </property>
   </action>
   <action name="menu_import_img">
    <property name="text">
-    <string>Import graphics...</string>
+    <string>I&amp;mport graphics...</string>
    </property>
   </action>
   <action name="menu_file_new_tileset">
    <property name="text">
-    <string>New Tileset File...</string>
+    <string>Ne&amp;w Tileset File...</string>
    </property>
   </action>
   <action name="menu_import_tileset">
    <property name="text">
-    <string>Import Tileset...</string>
+    <string>Im&amp;port Tileset...</string>
+   </property>
+  </action>
+  <action name="menu_assembler_settings">
+   <property name="text">
+    <string>&amp;Assembler Settings...</string>
    </property>
   </action>
  </widget>
- <resources>
-  <include location="iderc.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>menu_project_open</sender>
@@ -631,6 +636,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menu_assembler_settings</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>CompileOptions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>643</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <designerdata>
   <property name="gridDeltaX">
@@ -668,5 +689,6 @@
   <slot>ImportImage()</slot>
   <slot>NewTilesetFile()</slot>
   <slot>ImportTileset()</slot>
+  <slot>CompileOptions()</slot>
  </slots>
 </ui>

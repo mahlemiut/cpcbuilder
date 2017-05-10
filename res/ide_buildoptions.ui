@@ -7,13 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>663</width>
-    <height>84</height>
+    <height>95</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Build Options</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="dlg_build_filename"/>
+   </item>
    <item row="1" column="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
@@ -30,9 +33,6 @@
       <string>DSK file to build:</string>
      </property>
     </widget>
-   </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QLineEdit" name="dlg_build_filename"/>
    </item>
   </layout>
  </widget>

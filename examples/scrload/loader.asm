@@ -1,26 +1,27 @@
 ; Screen loading test app.
 
+	include "firmware.inc"
 	org &8000
 
 .start:
 	; enter mode 2 (640x200)
 	ld a,2
-	call &bc0e   ; SCR SET MODE
+	call scr_set_mode
 
 	; open file
 	ld b,10  ; filename length
 	ld hl,.filename  ; filename
 	ld de,.buffer  ; buffer
-	call &bc77  ; CAS IN OPEN
+	call cas_in_open
 	call z,.openfail  ; display fail message if open fails
 	
 	; load file contents into RAM
 	ld hl,&c000
-	call &bc83  ; CAS IN DIRECT
+	call cas_in_direct
 	call z,.openfail
 	
 	; close file
-	call &bc7a  ; CAS IN CLOSE
+	call &bc7a
 
 	; and exit
 	jr .exit
@@ -31,7 +32,7 @@
 	ld a,(hl)
 	cp 0
 	jr z,.txtdone
-	call &bb5a  ; TXT OUTPUT
+	call txt_output
 	inc hl
 	jr .txtloop
 .txtdone:

@@ -14,15 +14,8 @@
 #include "ui_ide_main.h"
 #include "main.h"
 #include "project.h"
+#include "appsettings.h"
 using namespace std;
-
-struct app_settings
-{
-	QString path_to_mess;  // Full path to MESS
-	bool use_path_to_mess;  // false to assume MESS is in the system path
-	QString path_to_pasmo;  // Full path to Pasmo
-	bool use_path_to_pasmo;  // false to assume Pasmo is in the system path
-};
 
 class ui_main;
 class ui_QMdiSubWindow;
@@ -67,6 +60,7 @@ public:
 	void remove_file(QString filename);
 	void rename_project_file(QString oldname, QString filename);
 	void redraw_project_tree();
+	appsettings settings() { return m_app_settings; }
 
 public slots:
 	void NewProject();
@@ -94,20 +88,24 @@ public slots:
 	void TogglePal();
 	void ExportPalClip();
 	void BuildOptions();
+    void CompileOptions();
 protected:
 	void closeEvent(QCloseEvent* event);
 private:
 	QString m_project_filename;
+    QString m_includedir;
 	QFont m_source_font;
 	QList<ui_QMdiSubWindow*> m_doclist;
 	project* m_current_project;  // currently loaded project
 	QDialog* m_dlg_newproject;
 	QDialog* m_dlg_fileprop;
 	QDialog* m_dlg_buildoptions;
-	QUiLoader loader;
+    QDialog* m_dlg_compileoptions;
+    QUiLoader loader;
 	highlighter* syntax;
 	QAction* palmenu;
 	QDir m_oldpath;
+	appsettings m_app_settings;
 };
 
 class ui_QMdiSubWindow : public QMdiSubWindow

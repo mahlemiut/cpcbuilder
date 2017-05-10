@@ -43,11 +43,12 @@ void project_file::set_filename(QString filename)
 	m_filename = filename;
 }
 
-project::project(QString name, QString filename) :
+project::project(QString name, QString filename, appsettings &stg) :
 	m_filename(filename),
 	m_name(name),
 	m_outfilename(m_name+".dsk"),
-	m_built(false)
+	m_built(false),
+	m_settings(stg)
 {
 }
 
@@ -205,9 +206,17 @@ int project::build(QPlainTextEdit* output)
 			QString basefilename = split_path.last();
 			QStringList split_base = basefilename.split(".");
 			QString basename = split_base.first();
+			QStringList::iterator dir_iter;
 
 			arg.clear();
 			arg += "-v";  // verbose
+
+			for(dir_iter=m_settings.include_begin();dir_iter!=m_settings.include_end();++dir_iter)
+			{
+				arg += "-I";
+				arg += (*dir_iter);
+			}
+
 			arg += (*it)->get_filename();
 			arg += (dir.absolutePath()+QDir::separator()+basename+".bin");
 

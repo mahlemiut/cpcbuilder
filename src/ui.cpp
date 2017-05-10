@@ -14,13 +14,23 @@
 
 ui_main::ui_main(QWidget* parent)
 	: QMainWindow(parent),
-	  m_current_project(NULL)
+      m_current_project(NULL)
 {
 	QWidget* form;
 	setupUi(this);
 	setWindowTitle("CPC Builder");
 
-	// pre-load some dialogs
+	// initialise include directory(ies)  TODO: read settings in the settings class
+    QSettings settings("cpcbuild.ini",QSettings::IniFormat);
+    if(settings.contains("assembler/include_dir"))
+		m_app_settings.set_includedir(settings.value("assembler/include_dir").toString());
+    else
+    {
+        QDir default_incl("."+QString(QDir::separator())+"include");
+		m_app_settings.set_includedir(default_incl.absolutePath());
+    }
+
+    // pre-load some dialogs
 	QAction* act1 = new QAction("Properties...",this);
 	connect(act1,SIGNAL(triggered()),this,SLOT(EditProperties()));
 	tree_files->addAction(act1);
@@ -39,6 +49,11 @@ ui_main::ui_main(QWidget* parent)
 	form = loader.load(&f3, this);
 	m_dlg_buildoptions = dynamic_cast<QDialog*>(form);
 	f3.close();
+    QFile f4(":/forms/compiler_setup_dialog.ui");
+    f4.open(QFile::ReadOnly);
+    form = loader.load(&f4, this);
+    m_dlg_compileoptions = dynamic_cast<QDialog*>(form);
+    f4.close();
 }
 
 ui_main::~ui_main()
@@ -59,7 +74,7 @@ void ui_main::NewProject()
 
 		name = dlg_name->text();
 		// new project
-		m_current_project = new project(name,fname);
+		m_current_project = new project(name,fname,m_app_settings);
 		if(m_current_project == NULL)
 			return;
 		m_project_filename = fname;
@@ -112,7 +127,7 @@ void ui_main::OpenProject()
 			name = attr.value("name").toString();
 	}
 
-	m_current_project = new project(name,m_project_filename);
+	m_current_project = new project(name,m_project_filename,m_app_settings);
 	filelist.clear();
 	while(stream.readNextStartElement())
 	{
@@ -860,6 +875,9 @@ void ui_main::ImportScr()
 void ui_main::closeEvent(QCloseEvent* event)
 {
 	CloseAll();
+    // settings save
+    QSettings settings("cpcbuild.ini",QSettings::IniFormat);
+	settings.setValue("assembler/include_dir",m_app_settings.includedir());
 	event->accept();
 }
 
@@ -1148,6 +1166,16 @@ void ui_main::BuildOptions()
 	if(m_dlg_buildoptions->exec() == QDialog::Accepted)
 		m_current_project->set_output_filename(dlg_name->text());
 }
+
+void ui_main::CompileOptions()
+{
+    QLineEdit* dlg_name = m_dlg_compileoptions->findChild<QLineEdit*>("dlg_compile_options_includedir");
+    dlg_name->clear();
+	dlg_name->insert(m_app_settings.includedir());
+    if(m_dlg_compileoptions->exec() == QDialog::Accepted)
+		m_app_settings.set_includedir(dlg_name->text());
+}
+
 
 // if file is part of the current project, then rename it.
 void ui_main::rename_project_file(QString oldname, QString filename)
