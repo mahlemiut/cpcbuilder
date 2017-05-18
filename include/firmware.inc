@@ -1,9 +1,9 @@
-; Amstrad CPC Firmware call definitions
-; Based on The Amstrad CPC Firmware Guide - http://cantrell.org.uk/david/tech/cpc/cpc-firmware/
-; TODO: add all firmware calls, add documentation
+; * Amstrad CPC Firmware call definitions
+; * Based on The Amstrad CPC Firmware Guide - http://cantrell.org.uk/david/tech/cpc/cpc-firmware/
+; * TODO: add all firmware calls, add documentation
 
 
-; Text VDU functions
+; * Text VDU functions
 
 ; TXT OUTPUT
 ; Output a character or control code to the screen
@@ -11,7 +11,7 @@
 ; Exit:  All registers preserved
 txt_output	equ &bb5a
 
-; Screen Pack functions
+; * Screen Pack functions
 
 ; SCR SET MODE
 ; Set the screen mode
@@ -20,7 +20,7 @@ txt_output	equ &bb5a
 ; Exit:  AF, BC, DE and HL corrupt
 scr_set_mode	equ &bc0e
 
-; Cassette/AMSDOS manager
+; * Cassette/AMSDOS manager
 
 ; CAS IN OPEN
 ; Opens an input buffer and reads the first block of the file

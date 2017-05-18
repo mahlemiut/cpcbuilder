@@ -30,6 +30,9 @@ ui_main::ui_main(QWidget* parent)
 		m_app_settings.set_includedir(default_incl.absolutePath());
     }
 
+	// load firmware function descriptions into memory
+	load_descriptions();
+
     // pre-load some dialogs
 	QAction* act1 = new QAction("Properties...",this);
 	connect(act1,SIGNAL(triggered()),this,SLOT(EditProperties()));
@@ -58,6 +61,56 @@ ui_main::ui_main(QWidget* parent)
 
 ui_main::~ui_main()
 {
+}
+
+void ui_main::load_descriptions()
+{
+	// make sure the list is empty
+	m_firmware_desc.clear();
+
+	// find firmware.inc
+	QString fname;
+	appsettings s = settings();
+
+	// go through include directories
+	for(QStringList::iterator it = s.include_begin();it != s.include_end();++it)
+	{
+		fname = (*it);
+		fname.append(QDir::separator());
+		fname.append("firmware.inc");
+		QFile qf(fname);
+		if(qf.open(QIODevice::ReadOnly))
+		{
+			// file exists in this include directory
+			read_descriptions_from_file(qf);
+			qf.close();
+			return;
+		}
+	}
+}
+
+void ui_main::read_descriptions_from_file(QFile& qf)
+{
+	char buffer[512];
+	QString desc,key;
+	int len;
+
+	while((len = qf.readLine(buffer,512)) != -1)
+	{
+		QString str = buffer;
+		if(!str.startsWith(QString("; *")) && len != 0)  // ignore these lines
+		{
+			if(str.startsWith(QChar(';')))
+				desc.append(str);
+			else
+			{
+				key = str.split(QString("\t")).at(0);
+				m_firmware_desc[key.toStdString()] = desc.toStdString();
+				desc.clear();
+				key.clear();
+			}
+		}
+	}
 }
 
 void ui_main::NewProject()
@@ -1227,6 +1280,7 @@ ui_QMdiSubWindow::ui_QMdiSubWindow(int doctype, QWidget* parent, Qt::WindowFlags
 		m_project(NULL),
 		m_doctype(doctype)
 {
+	setMouseTracking(true);
 }
 
 ui_QMdiSubWindow::~ui_QMdiSubWindow()
@@ -1777,6 +1831,38 @@ void ui_QMdiSubWindow::export_pal_to_clipboard()
 void ui_QMdiSubWindow::contents_changed()
 {
 	m_modified = true;
+}
+
+bool ui_QMdiSubWindow::event(QEvent *event)
+{
+	if(event->type() == QEvent::ToolTip)
+	{
+		QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
+		ui_main* p = dynamic_cast<ui_main*>(this->parent());
+		QTextEdit* widget = dynamic_cast<QTextEdit*>(this->widget());
+		if(widget == nullptr)
+		{
+			QToolTip::hideText();
+			return QMdiSubWindow::event(event);
+		}
+		QTextCursor cursor = widget->cursorForPosition(helpEvent->pos());
+		cursor.select(QTextCursor::WordUnderCursor);
+		if (!cursor.selectedText().isEmpty())
+		{
+			try
+			{
+				std::string text = p->fw_desc().at(cursor.selectedText().toStdString());
+				QToolTip::showText(helpEvent->globalPos(),QString(text.c_str()),widget);
+			}
+			catch (const std::out_of_range&)
+			{
+				QToolTip::hideText();
+			}
+		}
+	}
+	else
+		QToolTip::hideText();
+	return QMdiSubWindow::event(event);
 }
 
 void ui_QMdiSubWindow::closeEvent(QCloseEvent* event)

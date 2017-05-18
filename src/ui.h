@@ -11,6 +11,7 @@
 #include <QtWidgets>
 #include <QtUiTools/QUiLoader>
 #include <list>
+#include <unordered_map>
 #include "ui_ide_main.h"
 #include "main.h"
 #include "project.h"
@@ -19,6 +20,8 @@ using namespace std;
 
 class ui_main;
 class ui_QMdiSubWindow;
+
+typedef std::unordered_map<std::string,std::string> desc_map;
 
 class highlighter : public QSyntaxHighlighter
 {
@@ -60,8 +63,8 @@ public:
 	void remove_file(QString filename);
 	void rename_project_file(QString oldname, QString filename);
 	void redraw_project_tree();
-	appsettings settings() { return m_app_settings; }
-
+	const appsettings& settings() { return m_app_settings; }
+	const desc_map& fw_desc() { return m_firmware_desc; }
 public slots:
 	void NewProject();
 	void OpenProject();
@@ -92,6 +95,8 @@ public slots:
 protected:
 	void closeEvent(QCloseEvent* event);
 private:
+	void load_descriptions();
+	void read_descriptions_from_file(QFile& qf);
 	QString m_project_filename;
     QString m_includedir;
 	QFont m_source_font;
@@ -106,6 +111,7 @@ private:
 	QAction* palmenu;
 	QDir m_oldpath;
 	appsettings m_app_settings;
+	desc_map m_firmware_desc;
 };
 
 class ui_QMdiSubWindow : public QMdiSubWindow
@@ -139,6 +145,7 @@ public:
 public slots:
 	void contents_changed();
 protected:
+	bool event(QEvent *event);
 	void closeEvent(QCloseEvent* event);
 private:
 	QWidget* m_parent;
