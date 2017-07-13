@@ -6,120 +6,309 @@
 ; * Kernel functions
 
 ; KL CHOKE OFF
+; Clears all event queues and timer lists, except for keyboard scanning and sound routines
+; Exit:  B constains the foreground ROM select address (if any)
+;        DE contains the ROM entry address
+;        C contains the ROM select address for a RAM foreground program
+;        AF and HL are corrupt
 kl_choke_off		equ &bcc8
 
 ; KL ROM WALK
+; Finds and initialises all background ROMs (from ROM 1 to 7 on the 464, 0 to 15 on the 664/6128)
+; Entry:  DE contains the address of the first usable byte of memory
+;         HL contains the address of the last usable byte of memory
+; Exit:  DE contains the new address of the first usable byte
+;        HL contains the new address of the last usable byte
+;        AF and BC are corrupt
 kl_rom_walk		equ &bccb
 
 ; KL INIT_BACK
+; Finds and initialises a specific background ROM
+; Entry:  C contains the ROM select address
+;         DE contains the address of the first usable byte of memory
+;         HL contains the address of the last usable byte of memory
+; Exit:  DE contains the new address of the first usable byte
+;        HL contains the new address of the last usable byte
+;        AF and BC are corrupt
 kl_init_back		equ &bcce
 
 ; KL LOG EXT
+; Logs a new RSX to the firmware
+; Entry:  BC contains the address of the RSX's command table
+;         HL contains the address of four bytes used by the firmware
+; Exit:  DE is corrupt
 kl_log_ext		equ &bcd1
 
 ; KL FIND COMMAND
+; Searches for an RSX, foreground or background ROM to find a command in it's table
+; Command names should be uppercase, with the last character having 0x80 added to it
+; Search order is RSXs, then ROMs from lower numbers to higher numbers
+; Entry:  HL contains the address of the command name (in RAM) to search for
+; Exit:  A, B and DE are corrupt
+;        If command is found:
+;          Carry is true
+;          C contains the ROM select address of the ROM containing the routine
+;          HL contains the address of the routine
+;        otherwise:
+;          Carry is false
+;          C and HL are corrupt
 kl_find_command		equ &bcd4
 
 ; KL NEW FRAME FLY
+; Sets up a new frame flyback event block to the list of routines called on a new frame
+; flyback
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+;         B contains the event class (see KL INIT EVENT)
+;         C contains the ROM select address (if any)
+;         DE contains the address of the event routine
+; Exit:  AF, DE and HL are corrupt
 kl_new_frame_fly	equ &bcd7
 
 ; KL ADD FRAME FLY
+; Adds an existing, but deleted, frame flyback event block to the list of routines
+; called on a frame flyback
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+; Exit:  AF, DE and HL are corrupt
 kl_add_frame_fly	equ &bcda
 
 ; KL DEL FRAME FLY
+; Removes a frame flyback event block from the list of routines called on a frame
+; flyback
+; Entry:  HL contains the address of the event block
+; Exit:  AF, DE and HL are corrupt
 kl_del_frame_fly	equ &bcdd
 
 ; KL NEW FAST TICKER
+; Sets up a fast ticker event block to be run during the 1/300th second ticker
+; interrupt
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+;         B contains the event class (see KL INIT EVENT)
+;         C contains the ROM select address (if any)
+;         DE contains the address of the event routine
+; Exit:  AF, DE and HL are corrupt
 kl_new_fast_ticker	equ &bce0
 
 ; KL ADD FAST TICKER
+; Adds an existing, but deleted, fast ticker event block to be run during the
+; 1/300th second ticker interrupt
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+; Exit:  AF, DE and HL are corrupt
 kl_add_fast_ticker	equ &bce3
 
 ; KL DEL FAST TICKER
+; Removes a fast ticker event block to be run during the 1/300th second ticker
+; interrupt
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+; Exit:  AF, DE and HL are corrupt
 kl_del_fast_ticker	equ &bce6
 
 ; KL ADD TICKER
+; Sets up an event block to be run during the 1/50th second interrupt
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+;         DE contains the initial value of the counter
+;         BC contains the value of the counter to loaded when it reaches 0
+;           if BC is 0, then the event is triggered once, then ignored
+; Exit:  AF, BC, DE and HL are corrupt
 kl_add_ticker		equ &bce9
 
 ; KL DEL TICKER
+; Removes an event block to be run during the 1/50th second interrupt
+; Entry:  HL contains the address of the event block
+; Exit:  A and HL are corrupt
+;        if block is found:
+;          Carry is true
+;          DE contains the value remaining of the counter
+;          All other flags are corrupt
+;        else:
+;          Carry is false
+;          DE and all other flags corrupt
 kl_del_ticker		equ &bcec
 
 ; KL INIT EVENT
+; Initialises an event block
+; Event class:
+;   bit 0    : near address (set if routine is in the central 32k of RAM)
+;   bits 1-4 : synchronous event priority (never zero)
+;   bit 5    : always zero
+;   bit 6    : express event
+;   bit 7    : asynchronous event (has no priorities)
+; Entry:  HL contains the address of the event block in the central 32k of RAM
+;         B contains the class of event
+;         C contains the ROM select address
+;         DE contains the address of the event routine
 kl_init_event		equ &bcef
 
 ; KL EVENT
+; Triggers an event block
+; Entry:  HL contains the address fo the event block
+; Exit:  AF, BC, DE, HL are corrupt
 kl_event		equ &bcf2
 
 ; KL SYNC RESET
+; Clears the synchronous event queue
+; Exit:  AF and HL are corrupt
 kl_sync_reset		equ &bcf5
 
 ; KL DEL SYNCHRONOUS
+; Removes a synchronous event from the event queue
+; Entry:  HL contains the address of the event block
+; Exit:  AF, BC, DE and HL corrupt
 kl_del_synchronous	equ &bcf8
 
 ; KL NEXT SYNC
+; Checks if there is a synchronous event with a higher priority
+; Exit:  DE is corrupt
+;        if an event is to be processed:
+;          Carry is true
+;          HL contains the address of the event block
+;          A contains the priority of the previous event
+;        else:
+;          Carry is false
+;          A and HL are corrupt
 kl_next_sync		equ &bcfb
 
 ; KL DO SYNC
+; Runs a synchronous event routine
+; Call KL DONE SYNC after this to decrease the event counter
+; Entry:  HL contains the address of the event block
+; Exit:  AF, BC, DE, and HL are corrupt
 kl_do_sync		equ &bcfe
 
 ; KL DONE SYNC
+; Finishes running a synchronous routine
+; Call this after KL DO SYNC so that the event counter can be decreased
+; Entry:  A contains the priority of the previous event
+;         HL contains the address of the event block
+; Exit:  AF, BC, DE, and HL are corrupt
 kl_done_sync		equ &bd01
 
 ; KL EVENT DISABLE
+; Disables normal synchronous events
+; Exit:  HL is corrupt
 kl_event_disable	equ &bd04
 
 ; KL EVENT ENABLE
+; Enables normal synchronous events
+; Exit:  HL is corrupt
 kl_event_enable		equ &bd07
 
 ; KL DISARM EVENT
+; Disables a certain event
+; Should only be used for asynchronous events
+; Entry:  HL is the address of the event block
+; Exit:  AF is corrupt
 kl_disarm_event		equ &bd0a
 
 ; KL TIME PLEASE
+; Returns the time since power on or reset (overflows after about 166 days)
+; Exit:  DEHL contains the 4-byte elapsed time in 1/300th of a second units
+;        D is the MSB and L is the LSB of the count
 kl_time_please		equ &bd0d
 
 ; KL TIME SET
+; Sets the elapsed time
+; Entry:  DEHL contains the 4-byte time to set in 1/300th of a second units
+;         D is the MSB and L is the LSB of the count
 kl_time_set		equ &bd10
 
 
 ; * High Kernel Jumpblock
 
 ; KL UPPER ROM ENABLE
+; Enables the current upper ROM
+; Writes to the upper 16k still fall through to RAM
+; Exit:  A contains the previous state of the ROM
+;        Flags are corrupt
 kl_u_rom_enable		equ &b900
 
 ; KL UPPER ROM DISABLE
+; Disables the upper ROM
+; Exit:  A contains the previous state of the ROM
+;        Flags are corrupt
 kl_u_rom_disable	equ &b903
 
 ; KL LOWER ROM ENABLE
+; Enables the lower ROM
+; Writes to the lower 16k still fall through to RAM
+; Exit:  A contains the previous state of the ROM
+;        Flags are corrupt
 kl_l_rom_enable		equ &b906
 
 ; KL LOWER ROM DISABLE
+; Disables the lower ROM
+; Exit:  A contains the previous state of the ROM
+;        Flags are corrupt
 kl_l_rom_disable	equ &b909
 
 ; KL ROM RESTORE
+; Restores the previous state of the ROM
+; Entry:  A contains the previous state of the ROM (returned from the
+;         KL UPPER/LOWER ROM EN/DISABLE functions
+; Exit:  AF is corrupt
 kl_rom_restore		equ &b90c
 
 ; KL ROM SELECT
+; Select an upper ROM and enable it
+; Entry:  C contains the ROM select address
+; Exit:  C contains the ROM select address of the previous ROM
+;        B contains the state of the previous ROM
 kl_rom_select		equ &b90f
 
 ; KL CURR SELECTION
+; Gets the ROM select address of the current ROM
+; Exit:  A contains the ROM select address of the current ROM
 kl_curr_selection	equ &b912
 
 ; KL PROBE ROM
+; Gets the class and version of a specific ROM
+; Entry:   C contains the ROM select address of the ROM
+; Exit:  A contains the class of the ROM
+;          0x00: foreground ROM
+;          0x01: background ROM
+;          0x02: extension foreground ROM
+;          0x80: built-in ROM (ie: BASIC)
+;        H contains the version number
+;        L contains the mark number
+;        B and all flags are corrupt
 kl_probe_rom		equ &b915
 
 ; KL ROM DESELECT
+; Selects the previous ROM and sets its state
+; Entry:  C contains the ROM select address of the ROM to be reselected
+;         B contains the state of the required ROM
+; Exit:  C contains the ROM select address of the current ROM
+;        B is corrupt
 kl_rom_deselect		equ &b918
 
 ; KL LDIR
+; Switches off upper and lower ROMs and moves a block of memory
+; Entry:  DE contains the destination address
+;         HL points to the first byte to move
+;         BC contains the length of the block to move
+; Exit:  Flags, BC, DE and HL set as for LDIR instruction
 kl_ldir			equ &b91b
 
 ; KL LDDR
+; Switches off upper and lower ROMs and moves a block of memory
+; Entry:  DE contains the destination address
+;         HL points to the first byte to move
+;         BC contains the length of the block to move
+; Exit:  Flags, BC, DE and HL set as for LDDR instruction
 kl_lddr			equ &b91e
 
 ; KL POLL SYNCHRONOUS
+; Tests whether or not an event with a higher priority is waiting to be dealt with
+; Exit:  A is corrupt
+;        if there is a higher priority event:
+;          Carry is false
+;        else:
+;          Carry is true
+;        All other flags are corrupt
 kl_poll_synchronous	equ &b921
 
 ; KL SCAN NEEDED
+; Ensures that keyboard scanning occurs at the next ticker interrupt
+; Exit:  AF and HL are corrupt
 kl_scan_needed		equ &b92a
 
 
