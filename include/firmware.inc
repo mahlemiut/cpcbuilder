@@ -315,81 +315,243 @@ kl_scan_needed		equ &b92a
 ; * Key Manager functions
 
 ; KM INITIALISE
+; Initialises the Key Manager, setting everything up as it is at power on.
+; Key buffer is emptied, Shift and Caps Lock is turned off, and all expansion
+; and translation tables are reset to normal.  See also KM RESET.
+; Exit:  AF, BC, DE and HL are corrupt
 km_initialise		equ &bb00
 
 ; KM RESET
+; Resets the Key Manager; key buffer is emptied, and any current keys/characters
+; are ignored.  The key buffer can also be cleared with KM FLUSH on the 664 or 6128.
+; Exit:  AF, BC, DE and HL are corrupt
 km_reset		equ &bb03
 
 ; KM WAIT CHAR
+; Waits for the next character from the keyboard buffer.
+; Exit:  Carry is true
+;        A contains the character value
+;        All other flags are corrupt
 km_wait_char		equ &bb06
 
 ; KM READ CHAR
+; Tests to see if a character is available from the keyboard buffer, but doesn't
+; wait if one isn't available
+; Exit:  if a caharacter is available:
+;           Carry is true
+;           A contains the character value
+;        else:
+;           Carry is false
+;           A is corrupt
 km_read_char		equ &bb09
 
 ; KM CHAR RETURN
+; Saves a character for the next use of KM WAIT CHAR or KM READ CHAR.
+; Entry:  A contains the ASCII code of the character to put back
 km_char_return		equ &bb0c
 
 ; KM SET EXPAND
+; Assigns a string to a key code.
+; Entry:  B contains the key code
+;         C contains the length of the string
+;         HL contains the address of the string in RAM
+; Exit:  if successful, Carry is true, otherwise, Carry is false.
 km_set_expand		equ &bb0f
 
 ; KM GET EXPAND
+; Reads a character from an expanded string of characters.
+; Entry:  A contains an expansion token (ie: a key code)
+;         L contains the character position number (starts from 0)
+; Exit:  DE is corrupt
+;        if successful:
+;          Carry is true
+;          A contains the character
+;          All other flags are corrupt
+;        else
+;          Carry is false
+;          A is corrupt
+;          All other flags are corrupt
 km_get_expand		equ &bb12
 
 ; KM EXP BUFFER
+; Sets aside a buffer area for character expansion strings.
+; The buffer must reside in the central 32k of RAM.
+; Entry:  DE contains the address of the buffer
+;         HL contains the length of the buffer
+; Exit:  A, BC, DE and HL are corrupt
+;        if successful, Carry is true, otherwise Carry is false
 km_exp_buffer		equ &bb15
 
 ; KM WAIT KEY
+; Waits for a key to be pressed.  Does not expand any expansion tokens.
+; Exit:  Carry is true
+;        A holds the character or expansion token
 km_wait_key		equ &bb18
 
 ; KM READ KEY
+; Tests whether a key is available from the keyboard
+; Exit:  if a key is available:
+;          Carry is true
+;          A contains the character
+;        else
+;          Carry is false
+;          A is corrupt
 km_read_key		equ &bb1b
 
 ; KM TEST KEY
+; Tests if a particular key, joystick direction or button is pressed
+; Entry:  A contains the key or joystick input
+; Exit:  Carry is false
+;        A and HL are corrupt
+;        C contains the Shift and Control status (bits 5 and 7 respectively)
+;        if key is pressed, Zero is false, otherwise Zero is true
 km_test_key		equ &bb1e
 
 ; KM GET STATE
+; Gets the status of Shift and Caps Locks
+; Exit:  L = 0xff if Shift Lock is on, 0x00 otherwise
+;        H = 0xff if Caps Lock is on, 0x00 otherwise
 km_get_state		equ &bb21
 
 ; KM GET JOYSTICK
+; Gets the state of any joysticks attached
+; Exit:  A and H contains the state of joystick 0
+;        L contains the state of joystick 1
+;          bit 0 - Up
+;          bit 1 - Down
+;          bit 2 - Left
+;          bit 3 - Right
+;          bit 4 - Fire 2
+;          bit 5 - Fire 1
+;          bit 6 - Spare
+;          bit 7 - Always 0
+;        All bits are active high
 km_get_joystick		equ &bb24
 
 ; KM SET TRANSLATE
+; Sets the token or character that is assigned to a key when neither Shift
+; nor Control are pressed.
+; Special values for B are:
+;   0x80 - 0x9f : expansion tokens
+;          0xfd : toggle Caps Lock
+;          0xfe : toggle Shift Lock
+;          0xff : ignore this key
+; Entry:  A contains the key number
+;         B contains the new token or key
+; Exit:  AF and HL are corrupt
 km_set_translate	equ &bb27
 
 ; KM GET TRANSLATE
+; Finds out what token or character is assigned to a key when neither Shift
+; nor Control is pressed.
+; Special values that can be returned in A are:
+;   0x80 - 0x9f : expansion tokens
+;          0xfd : toggle Caps Lock
+;          0xfe : toggle Shift Lock
+;          0xff : ignore this key
+; Entry:  A contains the key number
+; Exit:  A contains the token or character assigned
+;        HL and flags are corrupt
 km_get_translate	equ &bb2a
 
 ; KM SET SHIFT
+; Sets the token or character that will be assigned to a key when Shift is
+; pressed as well
+; Special values for B are:
+;   0x80 - 0x9f : expansion tokens
+;          0xfd : toggle Caps Lock
+;          0xfe : toggle Shift Lock
+;          0xff : ignore this key
+; Entry:  A contains the key number
+;         B contains the new token or character
+; Exit:  AF and HL are corrupt
 km_set_shift		equ &bb2d
 
 ; KM GET SHIFT
+; Finds out what token or character will be assigned to a key when Shift is
+; pressed as well
+; Special values that can be returned in A are:
+;   0x80 - 0x9f : expansion tokens
+;          0xfd : toggle Caps Lock
+;          0xfe : toggle Shift Lock
+;          0xff : ignore this key
+; Entry:  A contains the key number
+; Exit:  A contains the token or character that is assigned
+;        HL and flags are corrupt
 km_get_shift		equ &bb30
 
 ; KM SET CONTROL
+; Sets the token or character that will be assigned to a key when Control is
+; pressed as well
+; Special values for B are:
+;   0x80 - 0x9f : expansion tokens
+;          0xfd : toggle Caps Lock
+;          0xfe : toggle Shift Lock
+;          0xff : ignore this key
+; Entry:  A contains the key number
+;         B contains the new token or character
+; Exit:  AF and HL are corrupt
 km_set_control		equ &bb33
 
 ; KM GET CONTROL
+; Finds out what token or character will be assigned to a key when Control is
+; pressed as well
+; Special values that can be returned in A are:
+;   0x80 - 0x9f : expansion tokens
+;          0xfd : toggle Caps Lock
+;          0xfe : toggle Shift Lock
+;          0xff : ignore this key
+; Entry:  A contains the key number
+; Exit:  A contains the token or character that is assigned
+;        HL and flags are corrupt
 km_get_control		equ &bb36
 
 ; KM SET REPEAT
+; Sets whether or not a key may repeat
+; Entry:  A contains the key number
+;         B contains 0xff if the key is to repeat, 0x00 if not
+; Exit:  AF, BC and HL are corrupt
 km_set_repeat		equ &bb39
 
 ; KM GET REPEAT
+; Checks if a key is set to repeat or not
+; Entry:  A contains the key number
+; Exit:  A and HL are corrupt
+;        Zero is true if the key repeats, false otherwise
+;        All other flags are corrupt
 km_get_repeat		equ &bb3c
 
 ; KM SET DELAY
+; Sets the time that elapses before the first repeat, and also set the repeat
+; speed
+; The values for the times are given in 1/5Oth seconds, and a value of 0 counts
+; as 256
+; Entry:  H contains the time before the first repeat
+;         L contains the time between repeats (repeat speed)
+; Exit:  AF is corrupt
 km_set_delay		equ &bb3f
 
 ; KM GET DELAY
+; Finds out the time that elapses before the first repeat and also the repeat speed
+; Exit:  H contains the time before the first repeat
+;        L holds the time between repeats
 km_get_delay		equ &bb42
 
 ; KM ARM BREAK
+; Arms the Break mechanism
+; Entry:  DE holds the address of the Break handling routine
+;         C holds the ROM select address for this routine
+; Exit:  AF, BC, DE and HL are corrupt
 km_arm_break		equ &bb45
 
 ; KM DISARM BREAK
+; Disables the Break mechanism
+; Exit:  AF and HL are corrupt
 km_disarm_break		equ &bb48
 
 ; KM BREAK EVENT
+; Generates a Break interrupt if a routine has been set by KM ARM BREAK
+; Exit:  AF and HL are corrupt
 km_break_event		equ &bb4b
 
 
