@@ -839,72 +839,171 @@ txt_swap_streams	equ &bbb7
 ; * Graphics VDU functions
 
 ; GRA INITIALISE
+; Initialise the graphics VDU to its default state (ie: as at power on)
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_initialise		equ &bbba
 
 ; GRA RESET
+; Resets the graphics VDU - setting the graphics indirections and write mode
+; to the defaults
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_reset		equ &bbbd
 
 ; GRA MOVE ABSOLUTE
+; Moves the graphics cursor to an absolute screen position
+; Entry:  DE contains the user X-coordinate
+;         HL contains the user Y-coordinate
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_move_absolute	equ &bbc0
 
 ; GRA MOVE RELATIVE
+; Moves the graphics cursor to a point relative to its present screen position
+; Entry:  DE contains the X-distance to move
+;         HL contains the Y-distance to move
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_move_relative	equ &bbc3
 
 ; GRA ASK CURSOR
+; Returns the graphics cursor's current position
+; Exit:  DE contains the user X-coordinate
+;        HL contains the user Y-coordinate
+;        AF is corrupt
 gra_ask_cursor		equ &bbc6
 
 ; GRA SET ORIGIN
+; Sets the graphics user origin's screen position
+; Entry:  DE contains the standard X-coordinate
+;         HL contains the standard Y-coordinate
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_set_origin		equ &bbc9
 
 ; GRA GET ORIGIN
+; Gets the graphics user origin's screen position
+; Exit:  DE contains the standard X-coordinate
+;        HL contains the standard Y-coordinate
 gra_get_origin		equ &bbcc
 
 ; GRA WIN WIDTH
+; Sets the left and right edges of the graphics window
+; Entry:  DE contains the standard X-coordinate of one edge
+;         HL contains the standard X-coordinate of the other side
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_win_width		equ &bbcf
 
 ; GRA WIN HEIGHT
+; Sets the top and bottom edges of the graphics window
+; Entry:  DE contains the standard Y-coordinate of one edge
+;         HL contains the standard Y-coordinate of the other side
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_win_height		equ &bbcf
 
 ; GRA GET W WIDTH
+; Gets the left and right edges of the graphics window
+; Exit:  DE contains the standard X-coordinate of the left edge
+;        HL contains the standard X-coordinate of the right edge
+;        AF is corrupt
 gra_get_w_width		equ &bbd5
 
 ; GRA GET W HEIGHT
+; Gets the top and bottom edges of the graphics window
+; Exit:  DE contains the standard Y-coordinate of the top edge
+;        HL contains the standard Y-coordinate of the bottom edge
+;        AF is corrupt
 gra_get_w_height	equ &bbd8
 
 ; GRA CLEAR WINDOW
+; Clears the graphics window to the graphics paper colour and moves the
+; cursor back to the user origin
+; Exit:  AF, BC, DE, and HL are corrupt
 gra_clear_window	equ &bbdb
 
 ; GRA SET PEN
+; Sets the graphics pen
+; Entry:  A contains the required text pen number
+; Exit:  AF is corrupt
 gra_set_pen		equ &bbde
 
 ; GRA GET PEN
+; Gets the graphics pen
+; Exit:  A contains the text pen number
+;        Flags are corrupt
 gra_get_pen		equ &bbe1
 
 ; GRA SET PAPER
+; Sets the graphics paper
+; Entry:  A contains the required graphics paper number
+; Exit:  AF is corrupt
 gra_set_paper		equ &bbe4
 
 ; GRA GET PAPER
+; Gets the graphics paper
+; Exit:  A contains the graphics paper number
+;        Flags are corrupt
 gra_get_paper		equ &bbe7
 
 ; GRA PLOT ABSOLUTE
+; Plots a point at an absolute user coordinate
+; Uses the GRA PLOT indirection
+; Entry:  DE contains the user X-coordinate
+;         HL contains the user Y-coordinate
+; Exit:  AF, BC, DE and HL are corrupt
 gra_plot_absolute	equ &bbea
 
 ; GRA PLOT RELATIVE
+; Plots a point at a position relative to the current graphics cursor
+; Uses the GRA PLOT indirection
+; Entry:  DE contains the relative X-coordinate
+;         HL contains the relative Y-coordinate
+; Exit:  AF, BC, DE and HL are corrupt
 gra_plot_relative	equ &bbed
 
 ; GRA TEST ABSOLUTE
+; Moves to an absolute position, and tests the point there
+; Uses the GRA TEST indirection
+; Entry:  DE contains the user X-coordinate
+;         HL contains the user Y-coordinate
+; Exit:  A contains the pen at the point
+;        BC, DE, and HL are corrupt
 gra_test_absolute	equ &bbf0
 
 ; GRA TEST RELATIVE
+; Moves to a position relative to the current position, and tests the
+; point there
+; Uses the GRA TEST indirection
+; Entry:  DE contains the relative X-coordinate
+;         HL contains the relative Y-coordinate
+; Exit:  A contains the pen at the point
+;        BC, DE, and HL are corrupt
 gra_test_relative	equ &bbf3
 
 ; GRA LINE ABSOLUTE
+; Draws a line from the current graphics position to an absolute position
+; The line is plotted in the current graphics pen colour (may be masked
+; on a 6128)
+; Uses the GRA LINE indirection
+; Entry:  DE contains the user X-coordinate
+;         HL contains the user Y-coordinate
+; Exit:  AF, BC, DE and HL are corrupt
 gra_line_absolute	equ &bbf6
 
 ; GRA LINE RELATIVE
+; Draws a line from the current graphics position to a relative screen position
+; The line is plotted in the current graphics pen colour (may be masked
+; on a 6128)
+; Uses the GRA LINE indirection
+; Entry:  DE contains the relative X-coordinate
+;         HL contains the relative Y-coordinate
+; Exit:  AF, BC, DE and HL are corrupt
 gra_line_relative	equ &bbf9
 
 ; GRA WR CHAR
+; Writes a character onto the screen at the current graphics position
+; As in BASIC, all characters including control codes are printed
+; Characters are printed with their top left corner at the current
+; graphics position, and moving the current graphics cursor one character
+; to the right for the next character to be printed
+; Entry:  A contains the character to be put onto the screen
+; Exit:  AF, BC, DE and HL are corrupt
 gra_wr_char		equ &bbfc
 
 
