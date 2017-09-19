@@ -118,7 +118,7 @@ void ui_main::NewProject()
 	int ret = QDialog::Rejected;
 
 	QString name, fname;
-	fname = QFileDialog::getOpenFileName(this,tr("New Project..."),"~/",tr("Project files (*.cpc);;All files (*.*)"));
+	fname = QFileDialog::getSaveFileName(this,tr("New Project..."),"~/",tr("Project files (*.cpc);;All files (*.*)"));
 	ret = m_dlg_newproject->exec();
 
 	if(ret == QDialog::Accepted && !fname.isEmpty())
@@ -927,6 +927,8 @@ void ui_main::ImportScr()
 
 void ui_main::closeEvent(QCloseEvent* event)
 {
+	if(m_current_project != NULL)
+		CloseProject();
 	CloseAll();
     // settings save
     QSettings settings("cpcbuild.ini",QSettings::IniFormat);
