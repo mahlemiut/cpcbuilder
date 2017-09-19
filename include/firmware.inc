@@ -1011,18 +1011,35 @@ gra_wr_char		equ &bbfc
 ; * Screen Pack	functions
 
 ; SCR INITIALISE
+; Initialises the Screen Pack to the default values used when the computer is
+; first switched on
+; Exit:  AF, BC, DE and HL are corrupt
 scr_initialise		equ &bbff
 
 ; SCR RESET
+; Resets the Screen Pack's indirections, flashing speeds and inks to their
+; default values
+; Exit:  AF, BC, DE and HL are corrupt
 scr_reset		equ &bc02
 
 ; SCR SET OFFSET
+; Sets the screen offset to the specified value, used for scrolling
+; Reset when the mode is set, or by SCR CLEAR, but not by the BASIC CLS command
+; Entry:  HL contains the required offset, which should be even
+; Exit:  AF and HL are corrupt
 scr_set_ofset		equ &bc05
 
 ; SCR SET BASE
+; Sets the memory location of the screen - effectively either 0x4000 or 0xc000
+; Can be set to any 16k block of RAM, default is 0xc000
+; Entry:  A contains the most significant byte of the screen address
+; Exit:  AF and HL are corrupt
 scr_set_base		equ &bc08
 
 ; SCR GET LOCATION
+; Gets the location of the screen memory and also the screen offset
+; Exit:  A contains the most significant byte of the screen memory address
+;        HL contains the current screen offset
 scr_get_location	equ &bc0b
 
 ; SCR SET MODE
@@ -1054,54 +1071,157 @@ scr_get_mode		equ &bc11
 scr_clear		equ &bc14
 
 ; SCR CHAR LIMITS
+; Gets the size of the screen in terms of characters
+; Exit:  B contains the number of characters horizontally
+;        C contains the number of characters vertically
+;        AF is corrupt
 scr_char_limits		equ &bc17
 
 ; SCR CHAR POSITION
+; Gets the address of the top left corner of a specific character position
+; Entry:  H contains the character physical column
+;         L contains the character physical row
+; Exit:  HL contains the memory address of the top left corner of the character
+;        B holds the width in bytes of a character in the present mode
+;        AF is corrupt
 scr_char_position	equ &bc1a
 
 ; SCR DOT POSITION
+; Gets the address of a pixel at a specific screen position
+; Entry:  DE contains the base X-coordinate of the pixel
+;         HL contains the base Y-coordinate of the pixel
+; Exit:  HL contains the memory address of the pixel
+;        C contains the bit mask for this pixel
+;        B contains the number of pixels stored in a byte minus 1
+;        AF and DE are corrupt
 scr_dot_position	equ &bc1d
 
 ; SCR NEXT BYTE
+; Calculates the screen address of the byte to the right of the specified screen
+; address
+; The next byte may be on the next line
+; Entry:  HL contains the screen address
+; Exit:  HL holds the screen address of the byte to the right of the original
+;          screen address
+;        AF is corrupt
 scr_next_byte		equ &bc20
 
 ; SCR PREV BYTE
+; Calculates the screen address of the byte to the left of the specified screen
+; address
+; The previous byte may be on the previous line
+; Entry:  HL contains the screen address
+; Exit:  HL holds the screen address of the byte to the left of the original
+;          screen address
+;        AF is corrupt
 scr_prev_byte		equ &bc23
 
 ; SCR NEXT LINE
+; Calculates the screen address of the byte below the specified screen address
+; Entry:  HL contains the screen address
+; Exit:  HL contains the screen address of the byte below the original screen
+;        address
+;        AF is corrupt
 scr_next_line		equ &bc26
 
 ; SCR PREV LINE
+; Calculates the screen address of the byte above the specified screen address
+; Entry:  HL contains the screen address
+; Exit:  HL contains the screen address of the byte above the original screen
+;        address
+;        AF is corrupt
 scr_prev_line		equ &bc29
 
 ; SCR INK ENCODE
+; Converts a PEN to provide a mask which, if applied to a screen byte, will convert
+; all of the pixels in the byte to the appropriate PEN
+; The returned mask will be different across each screen mode
+; Entry:  A contains the pen number
+; Exit:  A contains the encoded value of the pen
+;        Flags are corrupt
 scr_ink_encode		equ &bc2c
 
 ; SCR INK DECODE
+; Converts a PEN mask into the PEN number
+; This is the reverse of SCR INK ENCODE
+; Entry:  A contains the encoded pen value
+; Exit:  A contains the pen number
+;        Flags are corrupt
 scr_ink_decode		equ &bc2f
 
 ; SCR SET INK
+; Sets the colours of the current pen
+; If the two colours supplied differ, then they will alternate
+; Entry:  A contains the pen number
+;         B contains the first pen colour
+;         C contains the second pen colour
+; Exit:  AF, BC, DE and HL are corrupt
 scr_set_ink		equ &bc32
 
 ; SCR GET INK
+; Gets the colours of the current pen
+; Entry:  A contains the pen number
+; Exit:  B contains the first pen colour
+;        C contains the second pen colour
+;        AF, DE and HL are corrupt
 scr_get_ink		equ &bc35
 
 ; SCR SET BORDER
+; Sets the colours of the border
+; If the two colours supplied differ, then they will alternate
+; Entry:  B contains the first pen colour
+;         C contains the second pen colour
+; Exit:  AF, BC, DE and HL are corrupt
 scr_set_border		equ &bc38
 
 ; SCR GET BORDER
+; Gets the colours of the border
+; Exit:  B contains the first pen colour
+;        C contains the second pen colour
+;        AF, DE and HL are corrupt
 scr_get_border		equ &bc3b
 
 ; SCR SET FLASHING
+; Sets the speed at which pen and border colours alternate
+; Length is measured in 1/50ths of a second
+; A length of 0 equals 256 * 1/50th of a second
+; Default is 10.
+; Entry:  H contains the time that the first colour is displayed
+;         L contains the time that the second colour is displayed
+; Exit:  AF and HL are corrupt
 scr_set_flashing	equ &bc3e
 
 ; SCR GET FLASHING
+; Gets the speed at which pen and border colours alternate
+; Length is measured in 1/50ths of a second
+; A length of 0 equals 256 * 1/50th of a second
+; Exit:  H contains the time that the first colour is displayed
+;        L contains the time that the second colour is displayed
+;        AF is corrupt
 scr_get_flashing	equ &bc41
 
 ; SCR FILL BOX
+; Fills an area of the screen with an ink
+; Only works for character sized blocks of the screen
+; Entry:  A contains the mask for the ink that is to be used
+;         H contains the left hand column of the area to fill
+;         D contains the right hand column of the area to fill
+;         L holds the top line of the area using physical coordinates
+;         E holds the bottom line of the area using physical coordinates
+; Exit:  AF, BC, DE and HL are corrupt
 scr_fill_box		equ &bc44
 
 ; SCR FLOOD BOX
+; Fills an area of the screen with an ink
+; Only works for byte sized blocks of the screen
+; Entry:  C contains the encoded PEN that is to be used
+;         HL contains the screen address of the top left hand corner of the
+;         area to fill
+;         D contains the width of the area to be filled in bytes of the area
+;         to be filled in screen lines
+;         E contains the height of the area to be filled in bytes of the area
+;         to be filled in screen lines
+; Exit:  AF, BC, DE and HL are corrupt
 scr_flood_box		equ &bc47
 
 ; SCR CHAR INVERT
