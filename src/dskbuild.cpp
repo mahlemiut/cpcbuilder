@@ -123,10 +123,7 @@ bool dsk_builder::add_file(QString filename, unsigned int load, unsigned int ent
 
 	// all files begin at the start of a block, so move to the start of the next block
 	if(m_sector_counter & 1)
-	{
 		m_sector_counter++;
-		m_block_counter++;
-	}
 
 	// insert AMSDOS header
 	memset(buffer,0x00,sizeof(buffer));
@@ -157,9 +154,12 @@ bool dsk_builder::add_file(QString filename, unsigned int load, unsigned int ent
 	amsdos.checksum_low = check & 0xff;
 	amsdos.checksum_high = (check >> 8) & 0xff;
 
+	m_record_counter = 0;
 	m_alloc_counter = 0;
 	memcpy(m_sector_data[m_sector_counter],(unsigned char*)&amsdos,128);
 	fat.allocation[m_alloc_counter] = m_block_counter;
+	m_block_counter++;
+	m_alloc_counter++;
 	m_record_counter++;
 	bytes = f.read(buffer,512-128);  // fill rest of sector
 	m_record_counter += ((bytes-1)/128)+1;
@@ -234,6 +234,7 @@ bool dsk_builder::add_ascii_file(QString filename)
 		m_block_counter++;
 	}
 
+	m_record_counter = 0;
 	m_alloc_counter = 0;
 	fat.allocation[m_alloc_counter] = m_block_counter;
 	m_record_counter++;
