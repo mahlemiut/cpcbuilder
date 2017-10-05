@@ -250,6 +250,7 @@ int project::build(QPlainTextEdit* output)
 			{
 				if(output != 0)
 					output->appendPlainText(QString(">>> Pasmo returned an error (%1). Build not successful.\n").arg(exitcode));
+				output->ensureCursorVisible();
 				m_built = false;
 				return -1;
 			}
@@ -261,6 +262,7 @@ int project::build(QPlainTextEdit* output)
 				QString l = QString::number((*it)->get_load_address(),16);
 				QString e = QString::number((*it)->get_exec_address(),16);
 				output->appendPlainText(QString(">>> Adding %1 to virtual disk, Load: 0x%2, Exec: 0x%3\n").arg(dir.absolutePath()+QDir::separator()+basename+".bin").arg(l).arg(e));
+				output->ensureCursorVisible();
 			}
 		}
 		if((*it)->get_filetype() == PROJECT_FILE_BINARY || (*it)->get_filetype() == PROJECT_FILE_GRAPHICS
@@ -273,6 +275,7 @@ int project::build(QPlainTextEdit* output)
 				QString l = QString::number((*it)->get_load_address(),16);
 				QString e = QString::number((*it)->get_exec_address(),16);
 				output->appendPlainText(QString(">>> Adding %1 to virtual disk, Load: 0x%2, Exec: 0x%3\n").arg((*it)->get_filename()).arg(l).arg(e));
+				output->ensureCursorVisible();
 			}
 		}
 		if((*it)->get_filetype() == PROJECT_FILE_ASCII)
@@ -282,6 +285,7 @@ int project::build(QPlainTextEdit* output)
 			if(output != 0)
 			{
 				output->appendPlainText(QString(">>> Adding ASCII file %1 to virtual disk\n").arg((*it)->get_filename()));
+				output->ensureCursorVisible();
 			}
 		}
 	}
@@ -289,6 +293,7 @@ int project::build(QPlainTextEdit* output)
 
 	if(output != 0)
 		output->appendPlainText(QString(">>> Generating DSK image '%1'...").arg(m_outfilename));
+	output->ensureCursorVisible();
 
 	ret = dsk.generate_dsk();
 
@@ -299,6 +304,7 @@ int project::build(QPlainTextEdit* output)
 
 	if(output != 0)
 		output->appendPlainText(">>> Finished.\n");
+	output->ensureCursorVisible();
 	return 0;
 }
 
