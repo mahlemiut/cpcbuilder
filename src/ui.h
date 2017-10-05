@@ -65,6 +65,7 @@ public:
 	void redraw_project_tree();
 	const appsettings& settings() { return m_app_settings; }
 	const desc_map& fw_desc() { return m_firmware_desc; }
+	void set_status(const QString &str) { statusbar->showMessage(str); }
 public slots:
 	void NewProject();
 	void OpenProject();
@@ -144,6 +145,7 @@ public:
 	QWidget* parent() { return m_parent; }
 public slots:
 	void contents_changed();
+	void cursor_changed();
 protected:
 	bool event(QEvent *event);
 	void closeEvent(QCloseEvent* event);

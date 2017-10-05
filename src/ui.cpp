@@ -466,7 +466,8 @@ ui_QMdiSubWindow* ui_main::CreateWindowAsm()
 	subwin->setWidget(widget);
 	subwin->setMinimumSize(400,400);
 	subwin->setAttribute(Qt::WA_DeleteOnClose);
-	connect(widget,SIGNAL(textChanged()),subwin,SLOT(contents_changed()));
+	connect(widget,SIGNAL(textChanged()),subwin,SLOT(contents_changed())); // connect modification signal
+	connect(widget,SIGNAL(cursorPositionChanged()),subwin,SLOT(cursor_changed()));
 	syntax = new highlighter(widget->document());
 	mdi_main->addSubWindow(subwin);
 	subwin->show();
@@ -1271,7 +1272,6 @@ void ui_main::redraw_project_tree()
 	}
 }
 
-
 /*
  *  subclassed QMdiSubWindow, for document display
  */
@@ -1833,6 +1833,15 @@ void ui_QMdiSubWindow::export_pal_to_clipboard()
 void ui_QMdiSubWindow::contents_changed()
 {
 	m_modified = true;
+}
+
+void ui_QMdiSubWindow::cursor_changed()
+{
+	if(m_doctype != PROJECT_FILE_SOURCE_ASM && m_doctype != PROJECT_FILE_ASCII)
+		return;
+	ui_main* p = dynamic_cast<ui_main*>(this->parent());
+	QTextEdit* widget = dynamic_cast<QTextEdit*>(this->widget());
+	p->set_status(QString("Line %1").arg(widget->textCursor().blockNumber() + 1));
 }
 
 bool ui_QMdiSubWindow::event(QEvent *event)
