@@ -2,6 +2,7 @@ TEMPLATE	= app
 QT		+= uitools
 QT              += widgets
 CONFIG		+= debug_and_release
+QMAKE_CXXFLAGS += -Wno-implicit-fallthrough
 
 CONFIG(debug, debug|release) {
 	TARGET = cpcbuilder_debug

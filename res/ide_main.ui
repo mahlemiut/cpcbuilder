@@ -69,6 +69,9 @@
     <property name="title">
      <string>Wi&amp;ndow</string>
     </property>
+    <addaction name="menu_win_find"/>
+    <addaction name="menu_win_findnext"/>
+    <addaction name="separator"/>
     <addaction name="menu_win_tile"/>
     <addaction name="menu_win_cascade"/>
    </widget>
@@ -311,6 +314,22 @@
   <action name="menu_assembler_settings">
    <property name="text">
     <string>&amp;Assembler Settings...</string>
+   </property>
+  </action>
+  <action name="menu_win_find">
+   <property name="text">
+    <string>&amp;Find...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="menu_win_findnext">
+   <property name="text">
+    <string>Find &amp;Next</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
    </property>
   </action>
  </widget>
@@ -652,6 +671,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menu_win_find</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>Find()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>643</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>menu_win_findnext</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>FindNext()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>643</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <designerdata>
   <property name="gridDeltaX">
@@ -690,5 +741,7 @@
   <slot>NewTilesetFile()</slot>
   <slot>ImportTileset()</slot>
   <slot>CompileOptions()</slot>
+  <slot>Find()</slot>
+  <slot>FindNext()</slot>
  </slots>
 </ui>

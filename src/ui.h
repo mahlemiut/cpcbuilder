@@ -93,6 +93,8 @@ public slots:
 	void ExportPalClip();
 	void BuildOptions();
     void CompileOptions();
+	void Find();
+	void FindNext();
 protected:
 	void closeEvent(QCloseEvent* event);
 private:
@@ -113,6 +115,7 @@ private:
 	QDir m_oldpath;
 	appsettings m_app_settings;
 	desc_map m_firmware_desc;
+	QString m_searchstring;
 };
 
 class ui_QMdiSubWindow : public QMdiSubWindow

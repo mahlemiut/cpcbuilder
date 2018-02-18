@@ -33,7 +33,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>(c) 2011-2017, Barry Rodewald</string>
+      <string>(c) 2011-2018, Barry Rodewald</string>
      </property>
     </widget>
    </item>

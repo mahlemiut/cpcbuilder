@@ -859,6 +859,47 @@ void ui_main::CloseFile()
 	subwin->close();
 }
 
+void ui_main::Find()
+{
+	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
+	if(subwin == NULL)
+		return;
+	if(subwin->get_doctype() != PROJECT_FILE_SOURCE_ASM)
+		return;
+	QDialog dlg(this);
+	dlg.setModal(true);
+	QHBoxLayout* layout = new QHBoxLayout;
+	QLabel* label = new QLabel("Find:");
+	layout->addWidget(label);
+	QLineEdit* searchstr = new QLineEdit();
+	layout->addWidget(searchstr);
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+	connect(buttonBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+	connect(buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+	layout->addWidget(buttonBox);
+	dlg.setLayout(layout);
+	if(dlg.exec())
+	{
+		QTextEdit* widget = dynamic_cast<QTextEdit*>(subwin->widget());
+		widget->find(searchstr->text());
+		m_searchstring = searchstr->text();
+	}
+}
+
+void ui_main::FindNext()
+{
+	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
+	if(m_searchstring.isEmpty())
+		return;
+	if(subwin == NULL)
+		return;
+	if(subwin->get_doctype() != PROJECT_FILE_SOURCE_ASM)
+		return;
+
+	QTextEdit* widget = dynamic_cast<QTextEdit*>(subwin->widget());
+	widget->find(m_searchstring);
+}
+
 void ui_main::About()
 {
 	QUiLoader loader;
