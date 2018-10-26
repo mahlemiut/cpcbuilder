@@ -630,7 +630,7 @@ void ui_main::NewGfxFile()
 	w = 80;  // normal screen size
 	h = 200;
 	widget->set_size(w,h);
-	data = (unsigned char*)malloc(16384);  // screen size is 16kB (not all is visible)
+	data = reinterpret_cast<unsigned char*>(malloc(16384));  // screen size is 16kB (not all is visible)
 	memset(data,0,16384);
 	widget->set_data(data,16384);
 	widget->draw_scene();
@@ -670,7 +670,7 @@ void ui_main::NewTilesetFile()
 	tileeditor* widget = dynamic_cast<tileeditor*>(subwin->widget());
 
 	widget->set_size(w,h);
-	data = (unsigned char*)malloc(w*h);
+	data = reinterpret_cast<unsigned char*>(malloc(w*h));
 	memset(data,0,w*h);
 	widget->set_data(data,w*h);
 	widget->draw_scene();
@@ -1388,8 +1388,8 @@ bool ui_QMdiSubWindow::load_binary(QString filename)
 	set_filename(filename);
 	f.open(QFile::ReadOnly);
 	fsize = f.size();
-	data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
-	f.read((char*)data,fsize);
+	data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
+	f.read(reinterpret_cast<char*>(data),fsize);
 	f.close();
 
 	bin->set_data(data,fsize);
@@ -1434,7 +1434,7 @@ bool ui_QMdiSubWindow::load_gfx(QString filename)
 				return false;
             QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
             QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
-			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(0,10));
+			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(nullptr,10));
 			if(dlg_header->isChecked())
 				has_header = true;
 			else
@@ -1453,16 +1453,16 @@ bool ui_QMdiSubWindow::load_gfx(QString filename)
 	if(has_header)
 	{
 		fsize = f.size() - 0x80;
-		data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
+		data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
 		f.seek(0x80);  // skip AMSDOS header
-		f.read((char*)data,fsize);
+		f.read(reinterpret_cast<char*>(data),fsize);
 		m_modified = true;  // files are not saved with AMSDOS header, so it is effectively modified.
 	}
 	else
 	{
 		fsize = f.size();
-		data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
-		f.read((char*)data,fsize);
+		data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
+		f.read(reinterpret_cast<char*>(data),fsize);
 	}
 	f.close();
 
@@ -1488,8 +1488,8 @@ bool ui_QMdiSubWindow::load_gfx(QString filename, int width, int height)
 	set_filename(filename);
 	f.open(QFile::ReadOnly);
 	fsize = f.size();
-	data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
-	f.read((char*)data,fsize);
+	data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
+	f.read(reinterpret_cast<char*>(data),fsize);
 	f.close();
 
 	gfx->set_data(data,fsize);
@@ -1535,7 +1535,7 @@ bool ui_QMdiSubWindow::load_tileset(QString filename)
 				return false;
             QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
             QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
-			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(0,10));
+			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(nullptr,10));
 			if(dlg_header->isChecked())
 				has_header = true;
 			else
@@ -1554,16 +1554,16 @@ bool ui_QMdiSubWindow::load_tileset(QString filename)
 	if(has_header)
 	{
 		fsize = f.size() - 0x80;
-		data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
+		data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
 		f.seek(0x80);  // skip AMSDOS header
-		f.read((char*)data,fsize);
+		f.read(reinterpret_cast<char*>(data),fsize);
 		m_modified = true;  // files are not saved with AMSDOS header, so it is effectively modified.
 	}
 	else
 	{
 		fsize = f.size();
-		data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
-		f.read((char*)data,fsize);
+		data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
+		f.read(reinterpret_cast<char*>(data),fsize);
 	}
 	f.close();
 
@@ -1588,8 +1588,8 @@ bool ui_QMdiSubWindow::load_tileset(QString filename, int width, int height)
 	set_filename(filename);
 	f.open(QFile::ReadOnly);
 	fsize = f.size();
-	data = (unsigned char*)malloc(fsize);  // will be freed when the widget is closed, or when set_data is called again
-	f.read((char*)data,fsize);
+	data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed when the widget is closed, or when set_data is called again
+	f.read(reinterpret_cast<char*>(data),fsize);
 	f.close();
 
 	gfx->set_data(data,fsize);
@@ -1612,7 +1612,7 @@ bool ui_QMdiSubWindow::save_gfx(QString filename)
 	QFile f(filename);
 	f.open(QFile::WriteOnly);
 	QDataStream out(&f);
-	out.writeRawData((char*)gfx->get_data(),size);
+	out.writeRawData(reinterpret_cast<char*>(gfx->get_data()),size);
 	f.close();
 
 	return true;
@@ -1629,7 +1629,7 @@ bool ui_QMdiSubWindow::save_tileset(QString filename)
 	QFile f(filename);
 	f.open(QFile::WriteOnly);
 	QDataStream out(&f);
-	out.writeRawData((char*)gfx->get_data(),size);
+	out.writeRawData(reinterpret_cast<char*>(gfx->get_data()),size);
 	f.close();
 
 	return true;
@@ -1647,8 +1647,8 @@ bool ui_QMdiSubWindow::import_pal(QString filename)
 	QFile f(filename);
 	f.open(QFile::ReadOnly);
 	fsize = f.size();
-	data = (unsigned char*)malloc(fsize);  // will be freed once the data is copied
-	f.read((char*)data,fsize);
+	data = reinterpret_cast<unsigned char*>(malloc(fsize));  // will be freed once the data is copied
+	f.read(reinterpret_cast<char*>(data),fsize);
 	f.close();
 
 	gfx->load_pal_normal((data+0x88));  // skip file header and AMSDOS header
@@ -1670,8 +1670,8 @@ bool ui_QMdiSubWindow::import_pal_12bit(QString filename)
 	QFile f(filename);
 	f.open(QFile::ReadOnly);
 	fsize = f.size();
-	data = (unsigned short*)malloc(fsize);  // will be freed once the data is copied
-	f.read((char*)data,fsize);
+	data = reinterpret_cast<unsigned short*>(malloc(fsize));  // will be freed once the data is copied
+	f.read(reinterpret_cast<char*>(data),fsize);
 	f.close();
 
 	gfx->load_pal_12bit((data+0x44));  // skip file header and AMSDOS header
@@ -1723,7 +1723,7 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 			// run dialog
 			if(dlg->exec() == QDialog::Rejected)
 				return false;
-			gfx->set_size(dlg_width->text().toUInt(0,10),dlg_height->text().toUInt(0,10));
+			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(nullptr,10));
 			if(dlg_header->isChecked())
 				has_header = true;
 			else
@@ -1738,15 +1738,15 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 	QFile f(filename);
 	f.open(QFile::ReadOnly);
 //	fsize = f.size();
-	data = (unsigned char*)malloc(16384);
-	output = (unsigned char*)malloc(16384);  // will be freed when the widget is closed, or when set_data is called again
+	data = reinterpret_cast<unsigned char*>(malloc(16384));
+	output = reinterpret_cast<unsigned char*>(malloc(16384));  // will be freed when the widget is closed, or when set_data is called again
 	m_modified = false;
 	if(has_header)
 	{
 		f.seek(0x80);  // skip AMSDOS header
 		m_modified = true;
 	}
-//	fsize = f.read((char*)data,16384);  // limit to 16kB
+//	fsize = f.read(reinterpret_cast<char*>(data),16384);  // limit to 16kB
 	f.close();
 
 	width = gfx->get_width();
@@ -1795,7 +1795,7 @@ bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 	// TODO: add options
 
 	size = conv.calculate_size(mode);
-	buffer = (unsigned char*)malloc(size);
+	buffer = reinterpret_cast<unsigned char*>(malloc(size));
 	memset(buffer,0,size);
 	if(!conv.convert(buffer,size,mode))
 	{
@@ -1828,7 +1828,7 @@ bool ui_QMdiSubWindow::import_tileset(QString filename, int mode, int width, int
 	// TODO: add options
 
 	size = conv.calculate_size(mode,width,height); // TODO
-	buffer = (unsigned char*)malloc(size);
+	buffer = reinterpret_cast<unsigned char*>(malloc(size));
 	memset(buffer,0,size);
 	if(!conv.convert(buffer,size,mode,width,height)) // TODO
 	{

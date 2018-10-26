@@ -7,7 +7,7 @@
 
 #include "dskbuild.h"
 
-unsigned char sector_order[9] =
+static unsigned char sector_order[9] =
 {
 	0xc1, 0xc6, 0xc2, 0xc7, 0xc3, 0xc8, 0xc4, 0xc9, 0xc5
 };
@@ -57,7 +57,7 @@ bool dsk_builder::generate_dsk()
 	header.sides = 1;
 	header.track_size_low = 0x00;
 	header.track_size_high = 0x13;  // 0x1300 bytes per track (includes track header)
-	out.write((const char*)&header,sizeof(dsk_header));
+	out.write(reinterpret_cast<const char*>(&header),sizeof(dsk_header));
 
 	// write tracks - header then interleaved sector data
 	dsk_track track;
@@ -79,11 +79,11 @@ bool dsk_builder::generate_dsk()
 			track.sector_list[y].r = sector_order[y];
 			track.sector_list[y].n = 2;
 		}
-		out.write((const char*)&track,sizeof(dsk_track));
+		out.write(reinterpret_cast<const char*>(&track),sizeof(dsk_track));
 		for(y=0;y<9;y++)
 		{
 			int offset = 0x200*((sector_order[y]&0x0f)-1) + (x*0x1200);
-			out.write((const char*)m_sector_data+offset, 0x200);
+			out.write(reinterpret_cast<const char*>(m_sector_data)+offset, 0x200);
 		}
 	}
 	out.close();
@@ -147,7 +147,7 @@ bool dsk_builder::add_file(QString filename, unsigned int load, unsigned int ent
 	amsdos.entry_address_high = (entry >> 8) & 0xff;
 
 	// checksum
-	ptr = (unsigned char*)&amsdos;
+	ptr = reinterpret_cast<unsigned char*>(&amsdos);
 	for(x=0;x<66;x++)
 		check += *(ptr+x);
 
@@ -156,7 +156,7 @@ bool dsk_builder::add_file(QString filename, unsigned int load, unsigned int ent
 
 	m_record_counter = 0;
 	m_alloc_counter = 0;
-	memcpy(m_sector_data[m_sector_counter],(unsigned char*)&amsdos,128);
+	memcpy(m_sector_data[m_sector_counter],reinterpret_cast<unsigned char*>(&amsdos),128);
 	fat.allocation[m_alloc_counter] = m_block_counter;
 	m_block_counter++;
 	m_alloc_counter++;

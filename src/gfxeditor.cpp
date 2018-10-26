@@ -132,12 +132,12 @@ gfxeditor::gfxeditor(QWidget* parent) :
 	m_toolbar->addSeparator();
 
 	// set default palette
-	paldata = (unsigned char*)malloc(PAL_SIZE_CPC);
+	paldata = reinterpret_cast<unsigned char*>(malloc(PAL_SIZE_CPC));
 	memcpy(paldata,&default_palette,PAL_SIZE_CPC);
 	m_frame_palette->set_data(paldata,PAL_SIZE_CPC);
 	delete(paldata);  // palette data is copied to the palette editor, so this isn't needed anymore
 
-	paldata = (unsigned char*)malloc(PAL_SIZE_PLUS);
+	paldata = reinterpret_cast<unsigned char*>(malloc(PAL_SIZE_PLUS));
 	memcpy(paldata,&default_12bit_palette,PAL_SIZE_PLUS);
 	m_frame_palette->set_data(paldata,PAL_SIZE_PLUS);
 	delete(paldata);  // palette data is copied to the palette editor, so this isn't needed anymore
@@ -414,10 +414,10 @@ void tileeditor::add_gfx_tile()
 void tileeditor::remove_gfx_tile()
 {
 	unsigned char* new_data;
-	if(m_datasize <= (int)(m_width * m_height))
+	if(m_datasize <= static_cast<int>(m_width * m_height))
 		return;  // Only one tile left, no point deleting that.
 	m_datasize -= (m_width * m_height);
-	new_data = (unsigned char*)realloc(m_data,m_datasize);
+	new_data = reinterpret_cast<unsigned char*>(realloc(m_data,m_datasize));
 	// TODO: perhaps move data after the current tile back so that it's the current tile that is deleted
 	if(new_data != nullptr)
 	{
@@ -503,7 +503,7 @@ void paletteeditor::set_data(unsigned char* data, int size)
 	if(size == PAL_SIZE_CPC)
 		memcpy(m_data,data,size);
 	if(size == PAL_SIZE_PLUS)
-		memcpy((unsigned char*)m_12bit_data,data,size);
+		memcpy(reinterpret_cast<unsigned char*>(m_12bit_data),data,size);
 	m_palette_size = size;
 }
 
