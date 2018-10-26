@@ -14,7 +14,7 @@
 
 ui_main::ui_main(QWidget* parent)
 	: QMainWindow(parent),
-      m_current_project(NULL)
+	  m_current_project(nullptr)
 {
 	QWidget* form;
 	setupUi(this);
@@ -128,7 +128,7 @@ void ui_main::NewProject()
 		name = dlg_name->text();
 		// new project
 		m_current_project = new project(name,fname,m_app_settings);
-		if(m_current_project == NULL)
+		if(m_current_project == nullptr)
 			return;
 		m_project_filename = fname;
 		QString fpath(m_project_filename.section(QDir::separator(),0,-2));
@@ -159,7 +159,7 @@ void ui_main::OpenProject()
 	if(m_project_filename.isEmpty())
 		return;
 
-	if(m_current_project != NULL)
+	if(m_current_project != nullptr)
 		CloseProject();
 
 	QFile f(m_project_filename);
@@ -205,9 +205,9 @@ void ui_main::OpenProject()
 						subwin->load_text(pfile->get_filename());
 						subwin->setWindowTitle("Z80 Assembly - " + split.last());
 						if(attr.hasAttribute("load"))
-							pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
+							pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 						if(attr.hasAttribute("exec"))
-							pfile->set_exec_address(attr.value("exec").toString().toUInt(0,16));
+							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 						pfile->set_filename(attr.value("name").toString());
 						m_current_project->add_file(pfile);
 					}
@@ -228,9 +228,9 @@ void ui_main::OpenProject()
 							subwin->load_gfx(pfile->get_filename());
 						subwin->setWindowTitle("Graphics Editor (Screen) - " + split.last());
 						if(attr.hasAttribute("load"))
-							pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
+							pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 						if(attr.hasAttribute("exec"))
-							pfile->set_exec_address(attr.value("exec").toString().toUInt(0,16));
+							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 						pfile->set_filename(attr.value("name").toString());
 						m_current_project->add_file(pfile);
 					}
@@ -246,9 +246,9 @@ void ui_main::OpenProject()
 						subwin->setWindowTitle("Binary File - " + split.last());
 					}
 					if(attr.hasAttribute("load"))
-						pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
+						pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 					if(attr.hasAttribute("exec"))
-						pfile->set_exec_address(attr.value("exec").toString().toUInt(0,16));
+						pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 					pfile->set_filename(attr.value("name").toString());
 					m_current_project->add_file(pfile);
 				}
@@ -264,9 +264,9 @@ void ui_main::OpenProject()
 						subwin->setWindowTitle("Tileset Editor - " + split.last());
 					}
 					if(attr.hasAttribute("load"))
-						pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
+						pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 					if(attr.hasAttribute("exec"))
-						pfile->set_exec_address(attr.value("exec").toString().toUInt(0,16));
+						pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 					pfile->set_filename(attr.value("name").toString());
 					m_current_project->add_file(pfile);
 				}
@@ -280,9 +280,9 @@ void ui_main::OpenProject()
 						subwin->load_text(pfile->get_filename());
 						subwin->setWindowTitle("ASCII file - " + split.last());
 						if(attr.hasAttribute("load"))
-							pfile->set_load_address(attr.value("load").toString().toUInt(0,16));
+							pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 						if(attr.hasAttribute("exec"))
-							pfile->set_exec_address(attr.value("exec").toString().toUInt(0,16));
+							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 						pfile->set_filename(attr.value("name").toString());
 						m_current_project->add_file(pfile);
 					}
@@ -324,7 +324,7 @@ void ui_main::OpenProject()
 			QString shortname = split.last();
 			// update project file list
 			QTreeWidgetItem* item = tree_files->topLevelItem(0);
-			if(item == NULL)
+			if(item == nullptr)
 				return;  // this shouldn't happen
 			QTreeWidgetItem* child = new QTreeWidgetItem(item,QTreeWidgetItem::Type);
 			child->setText(0,shortname);
@@ -367,13 +367,13 @@ void ui_main::SaveProject()
 
 void ui_main::CloseProject()
 {
-	if(m_current_project == NULL)
+	if(m_current_project == nullptr)
 		return;
 	SaveProject();
 	tree_files->clear();
 	delete(m_current_project);
 	QDir::setCurrent(m_oldpath.path());  // restore previous working directory
-	m_current_project = NULL;
+	m_current_project = nullptr;
 	menu_project_close->setEnabled(false);
 	menu_project_build->setEnabled(false);
 	menu_project_buildoptions->setEnabled(false);
@@ -382,9 +382,9 @@ void ui_main::CloseProject()
 void ui_main::AddToProject()
 {
 	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
-	if(m_current_project == NULL)
+	if(m_current_project == nullptr)
 		return;
-	if(subwin == NULL)
+	if(subwin == nullptr)
 		return;
 	QString fname = subwin->get_filename();
 	QStringList split = fname.split(QDir::separator());
@@ -396,20 +396,20 @@ void ui_main::AddToProject()
 	if(subwin->get_doctype() == PROJECT_FILE_GRAPHICS)
 	{
 		gfxeditor* gfx = dynamic_cast<gfxeditor*>(subwin->widget());
-		if(gfx != NULL)
+		if(gfx != nullptr)
 			m_current_project->add_gfx_file(fname,gfx->get_width(),gfx->get_height());
 	}
 	else if(subwin->get_doctype() == PROJECT_FILE_TILESET)
 	{
 		tileeditor* gfx = dynamic_cast<tileeditor*>(subwin->widget());
-		if(gfx != NULL)
+		if(gfx != nullptr)
 			m_current_project->add_tileset_file(fname,gfx->get_width(),gfx->get_height());
 	}
 	else
 		m_current_project->add_file(fname);
 	// update project file list
 	QTreeWidgetItem* item = tree_files->topLevelItem(0);
-	if(item == NULL)
+	if(item == nullptr)
 		return;  // this shouldn't happen
 	QTreeWidgetItem* child = new QTreeWidgetItem(item,QTreeWidgetItem::Type);
 	child->setText(0,shortname);
@@ -420,7 +420,7 @@ void ui_main::AddToProject()
 
 void ui_main::BuildProject()
 {
-	if(m_current_project != NULL)
+	if(m_current_project != nullptr)
 		m_current_project->build(text_console);
 }
 
@@ -437,7 +437,7 @@ ui_QMdiSubWindow* ui_main::CreateWindow(int doctype)
 	case PROJECT_FILE_ASCII:
 		return CreateWindowASCII();
 	}
-	return NULL;
+	return nullptr;
 }
 
 ui_QMdiSubWindow* ui_main::CreateWindowAsm()
@@ -656,8 +656,8 @@ void ui_main::NewTilesetFile()
 				return;
             QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
             QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
-			w = dlg_width->text().toUInt(0,10);
-			h = dlg_height->text().toUInt(0,10);
+			w = dlg_width->text().toUInt(nullptr,10);
+			h = dlg_height->text().toUInt(nullptr,10);
 		}
 		else
 			return;
@@ -794,7 +794,7 @@ void ui_main::OpenFile()
 void ui_main::SaveFile()
 {
 	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
-	if(subwin == NULL)
+	if(subwin == nullptr)
 		return;
 	QString filename = subwin->get_filename();
 	QString typestr;
@@ -841,7 +841,7 @@ void ui_main::SaveFileAs()
 {
 	QString filename;
 	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
-	if(subwin == NULL)
+	if(subwin == nullptr)
 		return;
 	filename = QFileDialog::getSaveFileName(this,tr("Save File As..."),"~/",tr("Source files (*.asm);;All Files (*.*)"));
 	if(filename.isEmpty())
@@ -854,7 +854,7 @@ void ui_main::SaveFileAs()
 void ui_main::CloseFile()
 {
 	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
-	if(subwin == NULL)
+	if(subwin == nullptr)
 		return;
 	subwin->close();
 }
@@ -862,7 +862,7 @@ void ui_main::CloseFile()
 void ui_main::Find()
 {
 	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
-	if(subwin == NULL)
+	if(subwin == nullptr)
 		return;
 	if(subwin->get_doctype() != PROJECT_FILE_SOURCE_ASM)
 		return;
@@ -891,7 +891,7 @@ void ui_main::FindNext()
 	ui_QMdiSubWindow* subwin = dynamic_cast<ui_QMdiSubWindow*>(mdi_main->currentSubWindow());
 	if(m_searchstring.isEmpty())
 		return;
-	if(subwin == NULL)
+	if(subwin == nullptr)
 		return;
 	if(subwin->get_doctype() != PROJECT_FILE_SOURCE_ASM)
 		return;
@@ -930,7 +930,7 @@ void ui_main::CloseAll()
 	// close all open windows
 	foreach(QMdiSubWindow* win,mdi_main->subWindowList())
 	{
-		if(win != NULL)
+		if(win != nullptr)
 		{
 			win->close();
 		}
@@ -969,7 +969,7 @@ void ui_main::ImportScr()
 
 void ui_main::closeEvent(QCloseEvent* event)
 {
-	if(m_current_project != NULL)
+	if(m_current_project != nullptr)
 		CloseProject();
 	CloseAll();
     // settings save
@@ -983,7 +983,7 @@ void ui_main::DockOpenFile(QTreeWidgetItem* widget, int col)
 	QString filename;
 	QString typestr;
 	filename = widget->toolTip(col);
-	if(widget->parent() == NULL)
+	if(widget->parent() == nullptr)
 		return;
 	if(filename.isEmpty())
 		return;
@@ -1049,8 +1049,8 @@ void ui_main::EditProperties()
 	if(ret == QDialog::Accepted)
 	{
 		m_current_project->set_filetype(filename,dlg_type->currentIndex());
-		m_current_project->set_load_address(filename,dlg_load->text().toUInt(0,16));
-		m_current_project->set_exec_address(filename,dlg_exec->text().toUInt(0,16));
+		m_current_project->set_load_address(filename,dlg_load->text().toUInt(nullptr,16));
+		m_current_project->set_exec_address(filename,dlg_exec->text().toUInt(nullptr,16));
 	}
 }
 
@@ -1277,10 +1277,10 @@ void ui_main::CompileOptions()
 // if file is part of the current project, then rename it.
 void ui_main::rename_project_file(QString oldname, QString filename)
 {
-	if(m_current_project != NULL)  // check if there is an open project first
+	if(m_current_project != nullptr)  // check if there is an open project first
 	{
 		project_file* pf = m_current_project->find_file(oldname);
-		if(pf != NULL)
+		if(pf != nullptr)
 			pf->set_filename(filename);
 		redraw_project_tree();
 	}
@@ -1304,7 +1304,7 @@ void ui_main::redraw_project_tree()
 		QString shortname = split.last();
 		// update project file list
 		QTreeWidgetItem* item = tree_files->topLevelItem(0);
-		if(item == NULL)
+		if(item == nullptr)
 			return;  // this shouldn't happen
 		QTreeWidgetItem* child = new QTreeWidgetItem(item,QTreeWidgetItem::Type);
 		child->setText(0,shortname);
@@ -1320,7 +1320,7 @@ ui_QMdiSubWindow::ui_QMdiSubWindow(int doctype, QWidget* parent, Qt::WindowFlags
 		QMdiSubWindow(parent,flags),
 		m_parent(parent),
 		m_modified(false),
-		m_project(NULL),
+		m_project(nullptr),
 		m_doctype(doctype)
 {
 	setMouseTracking(true);
@@ -1434,7 +1434,7 @@ bool ui_QMdiSubWindow::load_gfx(QString filename)
 				return false;
             QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
             QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
-			gfx->set_size(dlg_width->text().toUInt(0,10),dlg_height->text().toUInt(0,10));
+			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(0,10));
 			if(dlg_header->isChecked())
 				has_header = true;
 			else
@@ -1535,7 +1535,7 @@ bool ui_QMdiSubWindow::load_tileset(QString filename)
 				return false;
             QLineEdit* dlg_width = dlg->findChild<QLineEdit*>("dlg_tile_width");
             QLineEdit* dlg_height = dlg->findChild<QLineEdit*>("dlg_tile_height");
-			gfx->set_size(dlg_width->text().toUInt(0,10),dlg_height->text().toUInt(0,10));
+			gfx->set_size(dlg_width->text().toUInt(nullptr,10),dlg_height->text().toUInt(0,10));
 			if(dlg_header->isChecked())
 				has_header = true;
 			else

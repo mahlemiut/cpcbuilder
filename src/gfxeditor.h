@@ -61,7 +61,7 @@ class gfxdisplay : public QFrame
 	Q_OBJECT
 
 public:
-	gfxdisplay(QWidget* parent = 0, paletteeditor* pal = 0);
+	gfxdisplay(QWidget* parent = nullptr, paletteeditor* pal = nullptr);
 	~gfxdisplay() { /* if(m_data != NULL) delete m_data;*/  }
 	void set_data(unsigned char* data, int x, int y);
 	void realloc_data(unsigned char* data) { m_data = data; }  // used after realloc()'ing data, as the old pointer doesn't become NULL, so can't be checked
@@ -155,7 +155,7 @@ class gfxeditor : public QWidget
 	Q_OBJECT
 
 public:
-	gfxeditor(QWidget* parent = 0);
+	gfxeditor(QWidget* parent = nullptr);
 	~gfxeditor();
 	QWidget* parent() { return m_parent; }
 	QGridLayout* layout() { return m_layout; }
@@ -209,7 +209,7 @@ class tileeditor : public gfxeditor
 	Q_OBJECT
 
 public:
-	tileeditor(QWidget* parent = 0);
+	tileeditor(QWidget* parent = nullptr);
 	~tileeditor();
 	virtual void set_data(unsigned char* data, int size);
 	virtual void plot(int x, int y);  // plot a point in the graphic using the currently selected pen

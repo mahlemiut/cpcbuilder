@@ -15,8 +15,8 @@ class bineditor : public QFrame
 	Q_OBJECT
 
 public:
-	bineditor(QWidget* parent = 0);
-	~bineditor() { if(m_data != NULL) delete m_data; }
+	bineditor(QWidget* parent = nullptr);
+	~bineditor() { if(m_data != nullptr) delete m_data; }
 	QWidget* parent() { return m_parent; }
 	unsigned char* data() { return m_data; }
 	void set_data(unsigned char* data, int size);

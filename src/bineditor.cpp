@@ -11,7 +11,7 @@
 bineditor::bineditor(QWidget* parent) :
 	QFrame(parent)
 {
-	m_data = NULL;
+	m_data = nullptr;
 	m_parent = parent;
 	setFrameShape(QFrame::StyledPanel);
 	setMinimumHeight(300);
@@ -68,7 +68,7 @@ void bineditor::paintEvent(QPaintEvent* event)
 
 void bineditor::set_data(unsigned char* data, int size)
 {
-	if(m_data != NULL)  // free data if it has already been set
+	if(m_data != nullptr)  // free data if it has already been set
 		delete m_data;
 	m_data = data;
 	m_datasize = size;

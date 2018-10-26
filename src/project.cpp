@@ -186,7 +186,7 @@ int project::build(QPlainTextEdit* output)
 	int exitcode;
 	dsk_builder dsk(m_outfilename);
 
-	if(output != 0)
+	if(output != nullptr)
 		output->clear();
 
 	// set up working directory
@@ -198,7 +198,7 @@ int project::build(QPlainTextEdit* output)
 	// or if it's data, then copy it to destination, if necessary
 	for(it=m_filelist.begin();it!=m_filelist.end();it++)
 	{
-		if(output != 0)
+		if(output != nullptr)
 			output->appendPlainText(">>> File: "+(*it)->get_filename()+"\n");
 		if((*it)->get_filetype() == PROJECT_FILE_SOURCE_ASM)
 		{
@@ -229,7 +229,7 @@ int project::build(QPlainTextEdit* output)
 				msg.exec();
 				return -1;
 			}
-			if(output != 0)
+			if(output != nullptr)
 			{
 				while(pasmo->state() != QProcess::NotRunning)
 				{
@@ -248,7 +248,7 @@ int project::build(QPlainTextEdit* output)
 			exitcode = pasmo->exitCode();
 			if(exitcode != 0)
 			{
-				if(output != 0)
+				if(output != nullptr)
 					output->appendPlainText(QString(">>> Pasmo returned an error (%1). Build not successful.\n").arg(exitcode));
 				output->ensureCursorVisible();
 				m_built = false;
@@ -257,7 +257,7 @@ int project::build(QPlainTextEdit* output)
 			// add file to disk image
 			dsk.add_file(dir.absolutePath()+QDir::separator()+basename+".bin",
 					(*it)->get_load_address(),(*it)->get_exec_address());
-			if(output != 0)
+			if(output != nullptr)
 			{
 				QString l = QString::number((*it)->get_load_address(),16);
 				QString e = QString::number((*it)->get_exec_address(),16);
@@ -270,7 +270,7 @@ int project::build(QPlainTextEdit* output)
 		{
 			// add file to disk image
 			dsk.add_file((*it)->get_filename(), (*it)->get_load_address(),(*it)->get_exec_address());
-			if(output != 0)
+			if(output != nullptr)
 			{
 				QString l = QString::number((*it)->get_load_address(),16);
 				QString e = QString::number((*it)->get_exec_address(),16);
@@ -282,7 +282,7 @@ int project::build(QPlainTextEdit* output)
 		{
 			// add file to disk image
 			dsk.add_ascii_file((*it)->get_filename());
-			if(output != 0)
+			if(output != nullptr)
 			{
 				output->appendPlainText(QString(">>> Adding ASCII file %1 to virtual disk\n").arg((*it)->get_filename()));
 				output->ensureCursorVisible();
@@ -291,7 +291,7 @@ int project::build(QPlainTextEdit* output)
 	}
 	m_built = true;
 
-	if(output != 0)
+	if(output != nullptr)
 		output->appendPlainText(QString(">>> Generating DSK image '%1'...").arg(m_outfilename));
 	output->ensureCursorVisible();
 
@@ -302,7 +302,7 @@ int project::build(QPlainTextEdit* output)
 	else
 		output->appendPlainText("Failed\n");
 
-	if(output != 0)
+	if(output != nullptr)
 		output->appendPlainText(">>> Finished.\n");
 	output->ensureCursorVisible();
 	return 0;
@@ -317,13 +317,13 @@ project_file* project::find_file(QString file)
 		if((*it)->get_filename() == file)
 			return *it;
 	}
-	return NULL;
+	return nullptr;
 }
 
 unsigned int project::get_load_address(QString file)
 {
 	project_file* f = find_file(file);
-	if(f != NULL)
+	if(f != nullptr)
 		return f->get_load_address();
 	else
 		return 0;
@@ -332,7 +332,7 @@ unsigned int project::get_load_address(QString file)
 unsigned int project::get_exec_address(QString file)
 {
 	project_file* f = find_file(file);
-	if(f != NULL)
+	if(f != nullptr)
 		return f->get_exec_address();
 	else
 		return 0;
@@ -341,7 +341,7 @@ unsigned int project::get_exec_address(QString file)
 int project::get_filetype(QString file)
 {
 	project_file* f = find_file(file);
-	if(f != NULL)
+	if(f != nullptr)
 		return f->get_filetype();
 	else
 		return 0;
@@ -350,20 +350,20 @@ int project::get_filetype(QString file)
 void project::set_load_address(QString file, unsigned int addr)
 {
 	project_file* f = find_file(file);
-	if(f != NULL)
+	if(f != nullptr)
 		f->set_load_address(addr);
 }
 
 void project::set_exec_address(QString file, unsigned int addr)
 {
 	project_file* f = find_file(file);
-	if(f != NULL)
+	if(f != nullptr)
 		f->set_exec_address(addr);
 }
 
 void project::set_filetype(QString file, int type)
 {
 	project_file* f = find_file(file);
-	if(f != NULL)
+	if(f != nullptr)
 		return f->set_filetype(type);
 }

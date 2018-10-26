@@ -28,7 +28,7 @@ class highlighter : public QSyntaxHighlighter
 	Q_OBJECT
 
 public:
-	highlighter(QTextDocument* parent = 0);
+	highlighter(QTextDocument* parent = nullptr);
 protected:
 	virtual void highlightBlock(const QString& text);
 private:
@@ -50,7 +50,7 @@ class ui_main : public QMainWindow, private Ui::MainWindow
 	Q_OBJECT
 
 public:
-	ui_main(QWidget* parent = 0);
+	ui_main(QWidget* parent = nullptr);
 	~ui_main();
 	void SaveProject();  // not a slot, since the project will be always auto-saved
 	ui_QMdiSubWindow* CreateWindow(int doctype);
@@ -123,7 +123,7 @@ class ui_QMdiSubWindow : public QMdiSubWindow
 	Q_OBJECT
 
 public:
-	ui_QMdiSubWindow(int doctype = PROJECT_FILE_SOURCE_ASM, QWidget* parent = 0, Qt::WindowFlags flags = 0);
+	ui_QMdiSubWindow(int doctype = PROJECT_FILE_SOURCE_ASM, QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::SubWindow);
 	~ui_QMdiSubWindow();
 	bool load_text(QString filename);
 	bool save_text(QString filename);

@@ -66,7 +66,7 @@ gfxeditor::gfxeditor(QWidget* parent) :
 	unsigned char* paldata;
 	int x;
 
-	m_data = NULL;
+	m_data = nullptr;
 	m_parent = parent;
 
 	// setup the child widget into a layout
@@ -172,7 +172,7 @@ QColor gfxeditor::get_colour(unsigned int pen)
 
 void gfxeditor::set_data(unsigned char* data, int size)
 {
-	if(m_data != NULL)
+	if(m_data != nullptr)
 		free(m_data);
 	m_data = data;
 	m_datasize = size;
@@ -183,7 +183,7 @@ bool gfxeditor::load_pal_normal(unsigned char* data)
 {
 	int x;
 
-	if(data == NULL)
+	if(data == nullptr)
 		return false;
 
 	for(x=0;x<16;x++)
@@ -196,7 +196,7 @@ bool gfxeditor::load_pal_12bit(unsigned short* data)
 {
 	int x;
 
-	if(data == NULL)
+	if(data == nullptr)
 		return false;
 
 	for(x=0;x<16;x++)
@@ -250,6 +250,7 @@ void gfxeditor::plot(int x, int y)
 		break;
 	case 3:
 		pen &= 0x03;
+	[[fallthrough]];
 	case 0:
 		loc += (x / 2);
 		mask = 0x55 << (1 - (x % 2));
@@ -399,7 +400,7 @@ void tileeditor::add_gfx_tile()
 	unsigned char* new_data;
 	m_datasize += (m_width * m_height);
 	new_data = (unsigned char*)realloc(m_data,m_datasize);
-	if(new_data != NULL)
+	if(new_data != nullptr)
 	{
 		m_data = new_data;
 		memset(new_data+(m_tile_total*(m_width*m_height)),0,(m_width*m_height));  // clear data in new tile
@@ -418,7 +419,7 @@ void tileeditor::remove_gfx_tile()
 	m_datasize -= (m_width * m_height);
 	new_data = (unsigned char*)realloc(m_data,m_datasize);
 	// TODO: perhaps move data after the current tile back so that it's the current tile that is deleted
-	if(new_data != NULL)
+	if(new_data != nullptr)
 	{
 		m_data = new_data;
 		m_frame_gfx->realloc_data(new_data);
@@ -512,7 +513,7 @@ void paletteeditor::paintEvent(QPaintEvent* event)
 	QRect rect(5,5,20,20);
 	int x,count=16;
 
-	if(m_data == NULL || m_12bit_data == NULL)
+	if(m_data == nullptr || m_12bit_data == nullptr)
 		return;
 
 	painter.setPen(QColor(0,0,0));
@@ -708,7 +709,7 @@ void paletteeditor::export_palette_to_clipboard()
 // gfxdisplay functions
 gfxdisplay::gfxdisplay(QWidget* parent, paletteeditor* pal) :
 		QFrame(parent),
-		m_data(NULL),
+		m_data(nullptr),
 		m_palette(pal),
 		m_x(0),
 		m_y(0),
@@ -725,13 +726,13 @@ gfxdisplay::gfxdisplay(QWidget* parent, paletteeditor* pal) :
 
 void gfxdisplay::set_data(unsigned char* data, int x, int y)
 {
-	if(m_data != NULL)
+	if(m_data != nullptr)
 	{
 		delete m_data;
-		m_data = NULL;
+		m_data = nullptr;
 	}
 
-	if(data == NULL)
+	if(data == nullptr)
 	{
 		m_width = 0;
 		m_height = 0;
@@ -816,7 +817,7 @@ void gfxdisplay::paintEvent(QPaintEvent* event)
 	if (m_zoom <= 0)
 		return;
 
-	if (m_data == NULL)
+	if (m_data == nullptr)
 		return;
 
 	if(m_format == SCR_FORMAT_LINEAR)
