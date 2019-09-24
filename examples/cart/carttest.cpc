@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="carttest" buildtype="cart">
+    <file name="carttest.asm" type="asm" load="8000" exec="8000" block="0"/>
+    <file name="nwarrcpc.png" type="gfx" load="8000" exec="8000" width="80" height="200" block="1"/>
+    <output filename="carttest.cpr"/>
+</project>

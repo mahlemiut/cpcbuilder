@@ -63,17 +63,17 @@ class gfxdisplay : public QFrame
 public:
 	gfxdisplay(QWidget* parent = nullptr, paletteeditor* pal = nullptr);
 	~gfxdisplay() { /* if(m_data != NULL) delete m_data;*/  }
-	void set_data(unsigned char* data, int x, int y);
+	void set_data(unsigned char* data, unsigned int x, unsigned int y);
 	void realloc_data(unsigned char* data) { m_data = data; }  // used after realloc()'ing data, as the old pointer doesn't become NULL, so can't be checked
 	int get_mode() { return m_mode; }
 	int get_draw_mode() { return m_draw_mode; }
-	int get_zoom() { return m_zoom; }
-	int get_height() { return m_height; }
-	int get_width() { return m_width; }
-	int get_height_pixel() { return (m_width * 8) * m_zoom; }
-	int get_width_pixel() { return (m_height * 2) * m_zoom; }
+	unsigned int get_zoom() { return m_zoom; }
+	unsigned int get_height() { return m_height; }
+	unsigned int get_width() { return m_width; }
+	unsigned int get_height_pixel() { return (m_width * 8) * m_zoom; }
+	unsigned int get_width_pixel() { return (m_height * 2) * m_zoom; }
 	int get_format() { return m_format; }
-	void set_size(unsigned int width, unsigned int height) { m_width = width; m_height = height; resize((m_width * 8) * m_zoom,(m_height * m_zoom) * 2); }
+	void set_size(unsigned int width, unsigned int height) { m_width = width; m_height = height; resize(static_cast<int>((m_width * 8) * m_zoom),static_cast<int>((m_height * m_zoom) * 2)); }
 	void set_tile(unsigned int tile) { m_tile_current = tile; }
 	void line_guide_active(bool state) { m_line_click = state; }
 	void box_guide_active(bool state) { m_box_click = state; }
@@ -83,7 +83,7 @@ public:
 	void set_guide_end(int x, int y) { m_guide_x1 = x; m_guide_y1 = y; }
 	void set_guide(int x0, int y0, int x1, int y1) { set_guide_begin(x0,y0); set_guide_end(x1,y1); }
 public slots:
-	void set_zoom(int level) { if(level >= 0) m_zoom = level+1; resize((m_width * 8) * m_zoom,(m_height * m_zoom) * 2);}
+	void set_zoom(unsigned int level) { m_zoom = level+1; resize(static_cast<int>((m_width * 8) * m_zoom),static_cast<int>((m_height * m_zoom) * 2));}
 	void set_mode(int mode) { m_mode = mode; }
 	void draw_mode_point() { m_draw_mode = GFX_DRAW_POINT; }
 	void draw_mode_line() { m_draw_mode = GFX_DRAW_LINE; }
@@ -99,9 +99,9 @@ private:
 	paletteeditor* m_palette;  // palette
 	int m_x;
 	int m_y;  //  display size
-	int m_zoom;  // display zoom level
-	int m_width;  // width in bytes (1 byte = 4 mode 1 pixels)
-	int m_height;
+	unsigned int m_zoom;  // display zoom level
+	unsigned int m_width;  // width in bytes (1 byte = 4 mode 1 pixels)
+	unsigned int m_height;
 	int m_mode;  // CPC video mode (0, 1 or 2)
 	int m_draw_mode;  // currently selected drawing tool
 	bool m_line_click;  // true if waiting for second click to finish line drawing
@@ -115,8 +115,8 @@ private:
 	unsigned int m_tile_current;
 	int m_format;
 	unsigned int get_pen(unsigned int x, unsigned char byte);
-	void convert_coords(int *x, int *y);
-	void convert_pixel(int *x, int *y);
+	void convert_coords(unsigned int *x, unsigned int *y);
+	void convert_pixel(unsigned int *x, unsigned int *y);
 };
 
 class paletteeditor : public QFrame
@@ -124,13 +124,13 @@ class paletteeditor : public QFrame
 	Q_OBJECT
 
 public:
-	paletteeditor(QWidget* parent = 0);
+	paletteeditor(QWidget* parent = nullptr);
 	~paletteeditor() { /*if(m_data != NULL) delete m_data;*/ }
-	void set_data(unsigned char* data, int size);
-	void set_colour(int colour, int index) { if(index < m_palette_size) m_data[index] = colour; }
-	void set_colour_12(int colour, int index) { if(index < m_palette_size) m_12bit_data[index] = colour; }
-	bool set_pen(int index, QColor colour);
-	QColor get_pen(int index);
+	void set_data(unsigned char* data, unsigned int size);
+	void set_colour(unsigned char colour, unsigned int index) { if(index < m_palette_size) m_data[index] = colour; }
+	void set_colour_12(unsigned short colour, unsigned int index) { if(index < m_palette_size) m_12bit_data[index] = colour; }
+	bool set_pen(unsigned int index, QColor colour);
+	QColor get_pen(unsigned int index);
 	int get_selected() { return m_selected; }
 	bool toggle_pal();
 	bool is_12bit_pal() { return m_12bit_palette; }
@@ -144,7 +144,7 @@ private:
 	QWidget* m_parent;
 	unsigned char m_data[PAL_SIZE_CPC];  // palette data
 	unsigned short m_12bit_data[PAL_SIZE_CPC];
-	int m_palette_size;  // 16, 4 or 2, depending on CPC video mode
+	unsigned int m_palette_size;  // 16, 4 or 2, depending on CPC video mode
 	int m_mode;  // CPC video mode (0, 1 or 2)
 	int m_selected;  // currently selected pen
 	bool m_12bit_palette;  // if true, allow 12-bit CPC+ colours
@@ -159,12 +159,12 @@ public:
 	~gfxeditor();
 	QWidget* parent() { return m_parent; }
 	QGridLayout* layout() { return m_layout; }
-	virtual void set_data(unsigned char* data, int size);
+	virtual void set_data(unsigned char* data, unsigned long long size);
 	void set_size(unsigned int width, unsigned int height) { m_width = width; m_height = height; m_frame_gfx->set_size(width,height); /*calculate_tiles();*/ }
-	int get_width() { return m_frame_gfx->get_width(); }
-	int get_height() { return m_frame_gfx->get_height(); }
+	unsigned int get_width() { return m_frame_gfx->get_width(); }
+	unsigned int get_height() { return m_frame_gfx->get_height(); }
 	void set_mode(unsigned char mode) { m_mode = mode; m_frame_gfx->set_mode(mode); }
-	int get_datasize() { return m_datasize; }
+	unsigned long long get_datasize() { return m_datasize; }
 	QScrollArea* get_scrollarea() { return m_scrollarea; }
 	unsigned char* get_data() const { return m_data; }
 	QColor get_colour(unsigned int pen);
@@ -185,7 +185,7 @@ protected:
 	void mousePressEvent(QMouseEvent* event);
 	QWidget* m_parent;
 	unsigned char* m_data;
-	int m_datasize;
+	unsigned long long m_datasize;
 	unsigned int m_width;  // width is in bytes, so 8 pixels in mode 2, 4 in mode 1, and 2 in mode 0 (and 3)
 	unsigned int m_height;
 	unsigned char m_mode;
@@ -211,14 +211,14 @@ class tileeditor : public gfxeditor
 public:
 	tileeditor(QWidget* parent = nullptr);
 	~tileeditor();
-	virtual void set_data(unsigned char* data, int size);
-	virtual void plot(int x, int y);  // plot a point in the graphic using the currently selected pen
-	void set_tile_num(int count) { m_tile_total = count; }
-	int get_tile_num() { return m_tile_total; }
+	virtual void set_data(unsigned char* data, unsigned long long size);
+	virtual void plot(unsigned int x, unsigned int y);  // plot a point in the graphic using the currently selected pen
+	void set_tile_num(unsigned int count) { m_tile_total = count; }
+	unsigned int get_tile_num() { return m_tile_total; }
 	void calculate_tiles();  // calculate the number of tiles that the data represents
 
 public slots:
-	void current_tile_changed(int val) { m_tile_current = val; m_frame_gfx->set_tile(val); draw_scene(); }
+	void current_tile_changed(unsigned int val) { m_tile_current = val; m_frame_gfx->set_tile(val); draw_scene(); }
 	void add_gfx_tile();
 	void remove_gfx_tile();
 

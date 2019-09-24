@@ -19,7 +19,7 @@ public:
 	~bineditor() { if(m_data != nullptr) delete m_data; }
 	QWidget* parent() { return m_parent; }
 	unsigned char* data() { return m_data; }
-	void set_data(unsigned char* data, int size);
+	void set_data(unsigned char* data, unsigned long long size);
 protected:
 	void paintEvent(QPaintEvent* event);
 private:

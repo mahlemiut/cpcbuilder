@@ -9,6 +9,7 @@
 #define PROJECT_H_
 
 #include <QtWidgets>
+#include <QAbstractTableModel>
 #include "appsettings.h"
 
 enum
@@ -18,6 +19,12 @@ enum
 	PROJECT_FILE_GRAPHICS,  // graphics data, will be treated the same as binary data
 	PROJECT_FILE_ASCII,  // Will be copied without an AMSDOS header (unless protected)
 	PROJECT_FILE_TILESET  // also graphics data, but stored linearly
+};
+
+enum
+{
+	BUILD_DISK = 0,  // output all files to a DSK disk image
+	BUILD_CART       // output files based on the block map to a CPR cartridge image
 };
 
 class project_file
@@ -38,6 +45,9 @@ public:
 	void set_size(int width, int height) { m_width = width; m_height = height; }
 	int get_width() { return m_width; }
 	int get_height() { return m_height; }
+	void set_block(char block) { m_block = block; }
+	char get_block() { return m_block; }
+	void clear_block() { m_block = -1; }
 private:
 	QString m_filename;
 	int m_filetype;
@@ -45,6 +55,7 @@ private:
 	unsigned int m_exec_address;
 	int m_width;  // gfx only
 	int m_height; // gfx only
+	char m_block;  // cartridge block to write compiled file to (-1 if unmapped)
 };
 
 
@@ -73,14 +84,32 @@ public:
 	void set_filetype(QString file, int type);
 	QString get_output_filename() { return m_outfilename; }
 	void set_output_filename(QString fname) { m_outfilename = fname; }
-	int build(QPlainTextEdit* output = 0);
+	int get_build_type() { return m_buildtype; }
+	void set_build_type(int type) { m_buildtype = type; }
+	int build(QPlainTextEdit* output = nullptr);
 private:
 	QString m_filename;  // project file name
 	QString m_name;  // name of project
 	QString m_outfilename;  // filename of DSK to output to.
+	int m_buildtype;  // Build output - DSK or CPR
 	QList<project_file*> m_filelist;
 	bool m_built;  // build status (true if a build has been successful)
 	appsettings m_settings;
+};
+
+class BlockMapModel : public QAbstractTableModel
+{
+public:
+	explicit BlockMapModel(QList<project_file*>* list, QObject* parent = nullptr);
+
+	int columnCount(const QModelIndex &parent = QModelIndex()) const override  { Q_UNUSED(parent) return  2; }
+	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+	Qt::ItemFlags flags(const QModelIndex &index) const override;
+	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+
+private:
+	QList<project_file*>* m_filelist_ptr;
 };
 
 #endif /* PROJECT_H_ */

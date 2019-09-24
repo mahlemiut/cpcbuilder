@@ -6,6 +6,7 @@
 !/ide.pro
 !/*.md
 *.dsk
+*.cpr
 cpcbuild.ini
 /debug
 /release

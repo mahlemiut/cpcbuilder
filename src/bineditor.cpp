@@ -66,7 +66,7 @@ void bineditor::paintEvent(QPaintEvent* event)
 	QFrame::paintEvent(event);
 }
 
-void bineditor::set_data(unsigned char* data, int size)
+void bineditor::set_data(unsigned char* data, unsigned long long size)
 {
 	if(m_data != nullptr)  // free data if it has already been set
 		delete m_data;

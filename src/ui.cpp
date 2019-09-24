@@ -155,6 +155,7 @@ void ui_main::OpenProject()
 	m_project_filename = QFileDialog::getOpenFileName(this,tr("Open Project..."),"~/",tr("Projects (*.cpc);;All Files (*.*)"));
 	QString fname;
 	QString fpath(m_project_filename.section(QDir::separator(),0,-2));
+	int buildtype = BUILD_DISK;
 
 	if(m_project_filename.isEmpty())
 		return;
@@ -178,10 +179,18 @@ void ui_main::OpenProject()
 		QXmlStreamAttributes attr = stream.attributes();
 		if(attr.hasAttribute("name"))
 			name = attr.value("name").toString();
+		if(attr.hasAttribute("buildtype"))
+		{
+			if(attr.value("buildtype").toString() == "disk")
+				buildtype = BUILD_DISK;
+			else if(attr.value("buildtype").toString() == "cart")
+				buildtype = BUILD_CART;
+		}
 	}
 
 	m_current_project = new project(name,m_project_filename,m_app_settings);
 	filelist.clear();
+	m_current_project->set_build_type(buildtype);
 	while(stream.readNextStartElement())
 	{
 		if(stream.name() == "file")
@@ -209,6 +218,8 @@ void ui_main::OpenProject()
 						if(attr.hasAttribute("exec"))
 							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 						pfile->set_filename(attr.value("name").toString());
+						if(buildtype == BUILD_CART)
+							pfile->set_block(attr.value("block").toInt());
 						m_current_project->add_file(pfile);
 					}
 				}
@@ -232,6 +243,8 @@ void ui_main::OpenProject()
 						if(attr.hasAttribute("exec"))
 							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 						pfile->set_filename(attr.value("name").toString());
+						if(buildtype == BUILD_CART)
+							pfile->set_block(attr.value("block").toInt());
 						m_current_project->add_file(pfile);
 					}
 				}
@@ -250,6 +263,8 @@ void ui_main::OpenProject()
 					if(attr.hasAttribute("exec"))
 						pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 					pfile->set_filename(attr.value("name").toString());
+					if(buildtype == BUILD_CART)
+						pfile->set_block(attr.value("block").toInt());
 					m_current_project->add_file(pfile);
 				}
 				if(attr.value("type").toString() == "tileset")
@@ -268,6 +283,8 @@ void ui_main::OpenProject()
 					if(attr.hasAttribute("exec"))
 						pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 					pfile->set_filename(attr.value("name").toString());
+					if(buildtype == BUILD_CART)
+						pfile->set_block(attr.value("block").toInt());
 					m_current_project->add_file(pfile);
 				}
 				if(attr.value("type").toString() == "ascii")
@@ -284,6 +301,8 @@ void ui_main::OpenProject()
 						if(attr.hasAttribute("exec"))
 							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
 						pfile->set_filename(attr.value("name").toString());
+						if(buildtype == BUILD_CART)
+							pfile->set_block(attr.value("block").toInt());
 						m_current_project->add_file(pfile);
 					}
 				}
@@ -351,6 +370,10 @@ void ui_main::SaveProject()
 
 	stream.writeStartElement("project");
 	stream.writeAttribute("name",m_current_project->get_name());
+	if(m_current_project->get_build_type() == BUILD_DISK)
+		stream.writeAttribute("buildtype","disk");
+	else if(m_current_project->get_build_type() == BUILD_CART)
+		stream.writeAttribute("buildtype","cart");
 
 	m_current_project->xml_filelist(&stream, curr);
 
@@ -1260,8 +1283,31 @@ void ui_main::BuildOptions()
     QLineEdit* dlg_name = m_dlg_buildoptions->findChild<QLineEdit*>("dlg_build_filename");
 	dlg_name->clear();
 	dlg_name->insert(m_current_project->get_output_filename());
+	QRadioButton* dlg_build_disk = m_dlg_buildoptions->findChild<QRadioButton*>("dlg_build_disk");
+	QRadioButton* dlg_build_cart = m_dlg_buildoptions->findChild<QRadioButton*>("dlg_build_cart");
+
+	if(m_current_project->get_build_type() == BUILD_CART)
+		dlg_build_cart->setChecked(true);
+	else
+		dlg_build_disk->setChecked(true);
+
+	QList<project_file*> filelist = m_current_project->get_filelist();
+	BlockMapModel block_model(&filelist);
+	QTableView* dlg_table = m_dlg_buildoptions->findChild<QTableView*>("dlg_block_map");
+	dlg_table->setModel(&block_model);
+
 	if(m_dlg_buildoptions->exec() == QDialog::Accepted)
+	{
 		m_current_project->set_output_filename(dlg_name->text());
+		if(!dlg_build_cart->isChecked())
+		{
+			for(int x=0;x<filelist.size();x++)
+				filelist.at(x)->clear_block();
+			m_current_project->set_build_type(BUILD_DISK);
+		}
+		else
+			m_current_project->set_build_type(BUILD_CART);
+	}
 }
 
 void ui_main::CompileOptions()

@@ -170,7 +170,7 @@ QColor gfxeditor::get_colour(unsigned int pen)
 	return QColor(cpc_colours[pen][0],cpc_colours[pen][1],cpc_colours[pen][2]);
 }
 
-void gfxeditor::set_data(unsigned char* data, int size)
+void gfxeditor::set_data(unsigned char* data, unsigned long long size)
 {
 	if(m_data != nullptr)
 		free(m_data);
@@ -181,7 +181,7 @@ void gfxeditor::set_data(unsigned char* data, int size)
 
 bool gfxeditor::load_pal_normal(unsigned char* data)
 {
-	int x;
+	unsigned int x;
 
 	if(data == nullptr)
 		return false;
@@ -194,7 +194,7 @@ bool gfxeditor::load_pal_normal(unsigned char* data)
 
 bool gfxeditor::load_pal_12bit(unsigned short* data)
 {
-	int x;
+	unsigned int x;
 
 	if(data == nullptr)
 		return false;
@@ -218,13 +218,10 @@ void gfxeditor::export_palette_to_clipboard()
 // plot a pixel at the location given, in the selected pen
 void gfxeditor::plot(int x, int y)
 {
-	int loc = 0;
-	int mask = 0;  // bit mask for the pixel written
+	unsigned int loc = 0;
+	unsigned char mask = 0;  // bit mask for the pixel written
 	int pen = m_frame_palette->get_selected();
-	int col = 0;
-
-	if(x < 0 || y < 0)
-		return;
+	unsigned char col = 0;
 
 	// the gfx editor uses the CPC screen layout
 	if(m_frame_gfx->get_format() == SCR_FORMAT_SCREEN)
@@ -399,7 +396,7 @@ void tileeditor::add_gfx_tile()
 {
 	unsigned char* new_data;
 	m_datasize += (m_width * m_height);
-	new_data = (unsigned char*)realloc(m_data,m_datasize);
+	new_data = reinterpret_cast<unsigned char*>(realloc(m_data,m_datasize));
 	if(new_data != nullptr)
 	{
 		m_data = new_data;
@@ -414,7 +411,7 @@ void tileeditor::add_gfx_tile()
 void tileeditor::remove_gfx_tile()
 {
 	unsigned char* new_data;
-	if(m_datasize <= static_cast<int>(m_width * m_height))
+	if(m_datasize <= static_cast<unsigned long long>(m_width * m_height))
 		return;  // Only one tile left, no point deleting that.
 	m_datasize -= (m_width * m_height);
 	new_data = reinterpret_cast<unsigned char*>(realloc(m_data,m_datasize));
@@ -429,22 +426,19 @@ void tileeditor::remove_gfx_tile()
 	calculate_tiles();
 }
 
-void tileeditor::set_data(unsigned char* data, int size)
+void tileeditor::set_data(unsigned char* data, unsigned long long size)
 {
 	gfxeditor::set_data(data,size);
 	calculate_tiles();
 }
 
 // plot a pixel at the location given, in the selected pen
-void tileeditor::plot(int x, int y)
+void tileeditor::plot(unsigned int x, unsigned int y)
 {
-	int loc;
-	int mask = 0;  // bit mask for the pixel written
+	unsigned int loc;
+	unsigned char mask = 0;  // bit mask for the pixel written
 	int pen = m_frame_palette->get_selected();
-	int col = 0;
-
-	if(x < 0 || y < 0)
-		return;
+	unsigned char col = 0;
 
 	// the tile editor does not use the CPC screen layout, it is stored linearly
 	loc = ((m_tile_current-1) * (m_width*m_height));  // go to start of current tile data
@@ -465,6 +459,7 @@ void tileeditor::plot(int x, int y)
 		break;
 	case 3:
 		pen &= 0x03;
+	[[fallthrough]];
 	case 0:
 		loc += (x / 2);
 		mask = 0x55 << (1 - (x % 2));
@@ -496,7 +491,7 @@ paletteeditor::paletteeditor(QWidget* parent) :
 	setMinimumWidth(30);
 }
 
-void paletteeditor::set_data(unsigned char* data, int size)
+void paletteeditor::set_data(unsigned char* data, unsigned int size)
 {
 	if(size != PAL_SIZE_CPC && size != PAL_SIZE_PLUS)
 		return;
@@ -512,9 +507,6 @@ void paletteeditor::paintEvent(QPaintEvent* event)
 	QPainter painter(this);
 	QRect rect(5,5,20,20);
 	int x,count=16;
-
-	if(m_data == nullptr || m_12bit_data == nullptr)
-		return;
 
 	painter.setPen(QColor(0,0,0));
 
@@ -589,14 +581,14 @@ void paletteeditor::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	if(event->button() == Qt::LeftButton)
 	{
-		int selected;
+		unsigned int selected;
 
 		// determine which box has been clicked
 		if(event->pos().x() < 5 || event->pos().x() > 25)
 			return;
 		if(event->pos().y() < 5 || event->pos().y() > 20*16)
 			return;
-		selected = (event->pos().y()-5) / 20;
+		selected = (static_cast<unsigned int>(event->pos().y())-5) / 20;
 
 		// selected new colour
 		QColor colour = QColorDialog::getColor();
@@ -628,9 +620,9 @@ void paletteeditor::mouseDoubleClickEvent(QMouseEvent* event)
 	}
 }
 
-bool paletteeditor::set_pen(int index, QColor colour)
+bool paletteeditor::set_pen(unsigned int index, QColor colour)
 {
-	int x;
+	unsigned char x;
 
 	for(x=0;x<32;x++)
 	{
@@ -646,7 +638,7 @@ bool paletteeditor::set_pen(int index, QColor colour)
 	return false;
 }
 
-QColor paletteeditor::get_pen(int index)
+QColor paletteeditor::get_pen(unsigned int index)
 {
 	QColor colour;
 
@@ -724,7 +716,7 @@ gfxdisplay::gfxdisplay(QWidget* parent, paletteeditor* pal) :
 	setMouseTracking(true);
 }
 
-void gfxdisplay::set_data(unsigned char* data, int x, int y)
+void gfxdisplay::set_data(unsigned char* data, unsigned int x, unsigned int y)
 {
 	if(m_data != nullptr)
 	{
@@ -826,12 +818,12 @@ void gfxdisplay::paintEvent(QPaintEvent* event)
 		{
 			for(x=display.left();x<=display.right();x++)  // pixel
 			{
-				int px = x, py = y;
+				unsigned int px = static_cast<unsigned int>(x), py = static_cast<unsigned int>(y);
 				unsigned int ptr,pen;
 
 				convert_pixel(&px,&py);
 				// determine which part of the gfx data to draw
-				if(px < m_width && py < m_height && px >= 0 && py >= 0)
+				if(px < m_width && py < m_height)
 				{
 					ptr = (m_width * m_height) * (m_tile_current - 1);
 					ptr += (m_width * py) + px;
@@ -848,12 +840,12 @@ void gfxdisplay::paintEvent(QPaintEvent* event)
 		{
 			for(x=display.left();x<=display.right();x++)  // pixel
 			{
-				int px = x, py = y;
+				unsigned int px = x, py = y;
 				unsigned int ptr,pen;
 
 				convert_pixel(&px,&py);
 				// determine which part of the gfx data to draw
-				if(px < m_width && py < m_height && px >= 0 && py >= 0)
+				if(px < m_width && py < m_height)
 				{
 					ptr = (py & 0x0007) * 0x800;  // row address
 					ptr += (py >> 3) * 80; // column
@@ -902,15 +894,12 @@ void gfxdisplay::mousePressEvent(QMouseEvent* event)
 	lx = x;
 	ly = y;
 
-	if(x < 0 || y < 0)
+	convert_coords(reinterpret_cast<unsigned int*>(&x),reinterpret_cast<unsigned int*>(&y));
+
+	if(x > static_cast<int>(get_width_pixel())-1)
 		return;
 
-	convert_coords(&x,&y);
-
-	if(x > get_width_pixel()-1)
-		return;
-
-	if(y > get_height_pixel()-1)
+	if(y > static_cast<int>(get_height_pixel())-1)
 		return;
 
 
@@ -967,11 +956,11 @@ void gfxdisplay::mouseMoveEvent(QMouseEvent* event)
 }
 
 // converts widget coordinates to scanline/byte coordinates
-void gfxdisplay::convert_coords(int *x, int *y)
+void gfxdisplay::convert_coords(unsigned int *x, unsigned int *y)
 {
-	int mode_width[4] = { 4, 2, 1, 4 };
-	int pixel_width = mode_width[get_mode()];
-	int xp,yp;
+	unsigned int mode_width[4] = { 4, 2, 1, 4 };
+	unsigned int pixel_width = mode_width[get_mode()];
+	unsigned int xp,yp;
 
 	xp = *x / (pixel_width * m_zoom);
 //	if(m_format == SCR_FORMAT_LINEAR)
@@ -987,9 +976,9 @@ void gfxdisplay::convert_coords(int *x, int *y)
 }
 
 // converts widget coordinates to byte-based co-ordinates
-void gfxdisplay::convert_pixel(int *x, int *y)
+void gfxdisplay::convert_pixel(unsigned int *x, unsigned int *y)
 {
-	int xp,yp;
+	unsigned int xp,yp;
 
 	xp = *x / (8 * m_zoom);
 //	if(m_format == SCR_FORMAT_LINEAR)
