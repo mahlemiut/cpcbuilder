@@ -36,7 +36,7 @@
      <x>0</x>
      <y>0</y>
      <width>1287</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -56,6 +56,7 @@
     <addaction name="menu_import_tileset"/>
     <addaction name="separator"/>
     <addaction name="menu_assembler_settings"/>
+    <addaction name="menu_emulator_settings"/>
     <addaction name="separator"/>
     <addaction name="menu_file_exit"/>
    </widget>
@@ -85,6 +86,8 @@
     <addaction name="separator"/>
     <addaction name="menu_project_build"/>
     <addaction name="menu_project_buildoptions"/>
+    <addaction name="separator"/>
+    <addaction name="actionTest_in_emulator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuProject"/>
@@ -167,7 +170,6 @@
             <font>
              <family>Courier New</family>
              <pointsize>12</pointsize>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
@@ -330,6 +332,19 @@
    </property>
    <property name="shortcut">
     <string>F3</string>
+   </property>
+  </action>
+  <action name="menu_emulator_settings">
+   <property name="text">
+    <string>E&amp;mulator Settings...</string>
+   </property>
+  </action>
+  <action name="actionTest_in_emulator">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Test in emulator...</string>
    </property>
   </action>
  </widget>
@@ -703,6 +718,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menu_emulator_settings</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>EmulatorSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>643</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <designerdata>
   <property name="gridDeltaX">
@@ -743,5 +774,6 @@
   <slot>CompileOptions()</slot>
   <slot>Find()</slot>
   <slot>FindNext()</slot>
+  <slot>EmulatorSettings()</slot>
  </slots>
 </ui>

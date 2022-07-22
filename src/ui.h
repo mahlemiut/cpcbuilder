@@ -93,6 +93,7 @@ public slots:
 	void ExportPalClip();
 	void BuildOptions();
     void CompileOptions();
+	void EmulatorSettings();
 	void Find();
 	void FindNext();
 protected:
@@ -109,6 +110,7 @@ private:
 	QDialog* m_dlg_fileprop;
 	QDialog* m_dlg_buildoptions;
     QDialog* m_dlg_compileoptions;
+	QDialog* m_dlg_emuoptions;
     QUiLoader loader;
 	highlighter* syntax;
 	QAction* palmenu;

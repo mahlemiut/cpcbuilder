@@ -16,7 +16,7 @@ appsettings::appsettings() :
 void appsettings::set_includedir(QString dir)
 {
 	m_includedirs.clear();
-	m_includedirs = dir.split(";",QString::SkipEmptyParts);
+	m_includedirs = dir.split(";",Qt::SkipEmptyParts);
 }
 
 QString appsettings::includedir()
@@ -50,4 +50,34 @@ QString appsettings::pasmo_path()
 bool appsettings::pasmo_use_syspath()
 {
 	return m_pasmo_use_syspath;
+}
+
+QString appsettings::emu_path()
+{
+	return m_emu_path;
+}
+
+void appsettings::set_emu_path(QString emu_path)
+{
+	m_emu_path = emu_path;
+}
+
+int appsettings::emu_model()
+{
+	return m_emu_model;
+}
+
+void appsettings::set_emu_model(int model)
+{
+	m_emu_model = model;
+}
+
+int appsettings::emu_exp()
+{
+	return m_emu_exp;
+}
+
+void appsettings::set_emu_exp(int exp)
+{
+	m_emu_exp = exp;
 }

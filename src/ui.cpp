@@ -29,6 +29,12 @@ ui_main::ui_main(QWidget* parent)
         QDir default_incl("."+QString(QDir::separator())+"include");
 		m_app_settings.set_includedir(default_incl.absolutePath());
     }
+	if(settings.contains("emulator/emu_path"))
+		m_app_settings.set_emu_path(settings.value("emulator/emu_path").toString());
+	if(settings.contains("emulator/model"))
+		m_app_settings.set_emu_model(settings.value("emulator/model").toInt());
+	if(settings.contains("emulator/exp"))
+		m_app_settings.set_emu_exp(settings.value("emulator/exp").toInt());
 
 	// load firmware function descriptions into memory
 	load_descriptions();
@@ -56,7 +62,12 @@ ui_main::ui_main(QWidget* parent)
     f4.open(QFile::ReadOnly);
     form = loader.load(&f4, this);
     m_dlg_compileoptions = dynamic_cast<QDialog*>(form);
-    f4.close();
+	f4.close();
+	QFile f5(":/forms/ide_emuprop.ui");
+	f5.open(QFile::ReadOnly);
+	form = loader.load(&f5, this);
+	m_dlg_emuoptions = dynamic_cast<QDialog *>(form);
+	f5.close();
 }
 
 ui_main::~ui_main()
@@ -93,7 +104,7 @@ void ui_main::read_descriptions_from_file(QFile& qf)
 {
 	char buffer[512];
 	QString desc,key;
-	int len;
+	int64_t len;
 
 	while((len = qf.readLine(buffer,512)) != -1)
 	{
@@ -998,6 +1009,9 @@ void ui_main::closeEvent(QCloseEvent* event)
     // settings save
     QSettings settings("cpcbuild.ini",QSettings::IniFormat);
 	settings.setValue("assembler/include_dir",m_app_settings.includedir());
+	settings.setValue("emulator/emu_path",m_app_settings.emu_path());
+	settings.setValue("emulator/model",m_app_settings.emu_model());
+	settings.setValue("emulator/exp",m_app_settings.emu_exp());
 	event->accept();
 }
 
@@ -1319,6 +1333,49 @@ void ui_main::CompileOptions()
 		m_app_settings.set_includedir(dlg_name->text());
 }
 
+void ui_main::EmulatorSettings()
+{
+	QLineEdit* dlg_name = m_dlg_emuoptions->findChild<QLineEdit*>("dlg_emupath");
+	dlg_name->clear();
+	dlg_name->insert(m_app_settings.emu_path());
+	switch(m_app_settings.emu_model())
+	{
+	case appsettings::EMUMODEL_464:
+		m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_464")->setChecked(true);
+		break;
+	case appsettings::EMUMODEL_664:
+		m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_664")->setChecked(true);
+		break;
+	case appsettings::EMUMODEL_6128:
+		m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_6128")->setChecked(true);
+		break;
+	case appsettings::EMUMODEL_464PLUS:
+		m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_464plus")->setChecked(true);
+		break;
+	case appsettings::EMUMODEL_6128PLUS:
+		m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_6128plus")->setChecked(true);
+		break;
+	}
+
+	if(m_dlg_emuoptions->exec() == QDialog::Accepted)
+	{
+		// todo: get model/expansion values
+		int m=appsettings::EMUMODEL_464,e=appsettings::EMUEXP_NONE;
+		if(m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_464")->isChecked())
+			m = appsettings::EMUMODEL_464;
+		else if(m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_664")->isChecked())
+			m = appsettings::EMUMODEL_664;
+		else if(m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_6128")->isChecked())
+			m = appsettings::EMUMODEL_6128;
+		else if(m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_464plus")->isChecked())
+			m = appsettings::EMUMODEL_464PLUS;
+		else if(m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_6128plus")->isChecked())
+			m = appsettings::EMUMODEL_6128PLUS;
+		m_app_settings.set_emu_path(dlg_name->text());
+		m_app_settings.set_emu_model(m);
+		m_app_settings.set_emu_exp(e);
+	}
+}
 
 // if file is part of the current project, then rename it.
 void ui_main::rename_project_file(QString oldname, QString filename)
@@ -1846,7 +1903,7 @@ bool ui_QMdiSubWindow::import_image(QString filename, int mode)
 	if(!conv.convert(buffer,size,mode))
 	{
 		// failed
-		delete(buffer);
+		free(buffer);
 		return false;
 	}
 	else
@@ -1879,7 +1936,7 @@ bool ui_QMdiSubWindow::import_tileset(QString filename, int mode, int width, int
 	if(!conv.convert(buffer,size,mode,width,height)) // TODO
 	{
 		// failed
-		delete(buffer);
+		free(buffer);
 		return false;
 	}
 	else
