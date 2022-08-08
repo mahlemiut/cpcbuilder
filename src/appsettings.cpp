@@ -81,3 +81,13 @@ void appsettings::set_emu_exp(int exp)
 {
 	m_emu_exp = exp;
 }
+
+QString appsettings::emu_ospath()
+{
+	return m_emu_ospath;
+}
+
+void appsettings::set_emu_ospath(QString path)
+{
+	m_emu_ospath = path;
+}

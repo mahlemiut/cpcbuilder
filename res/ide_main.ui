@@ -87,7 +87,7 @@
     <addaction name="menu_project_build"/>
     <addaction name="menu_project_buildoptions"/>
     <addaction name="separator"/>
-    <addaction name="actionTest_in_emulator"/>
+    <addaction name="menu_project_test"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuProject"/>
@@ -339,7 +339,7 @@
     <string>E&amp;mulator Settings...</string>
    </property>
   </action>
-  <action name="actionTest_in_emulator">
+  <action name="menu_project_test">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -607,14 +607,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>menu_project_buildoptions</sender>
+   <sender>menu_project_test</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>BuildOptions()</slot>
+   <slot>TestEmu()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
+     <x>643</x>
+     <y>10</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
@@ -659,22 +659,6 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>ImportTileset()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>643</x>
-     <y>434</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>menu_assembler_settings</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>CompileOptions()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -775,5 +759,6 @@
   <slot>Find()</slot>
   <slot>FindNext()</slot>
   <slot>EmulatorSettings()</slot>
+  <slot>TestEmu()</slot>
  </slots>
 </ui>

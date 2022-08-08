@@ -82,6 +82,7 @@ public slots:
 	void About();
 	void Exit();
 	void CloseAll();
+	void TestEmu();
 	void DockOpenFile(QTreeWidgetItem* widget, int col);
 	void EditProperties();
 	void ImportPal();

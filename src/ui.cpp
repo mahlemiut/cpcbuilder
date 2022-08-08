@@ -11,6 +11,7 @@
 #include "imgconvert.h"
 #include "project.h"
 #include <typeinfo>
+#include <filesystem>
 
 ui_main::ui_main(QWidget* parent)
 	: QMainWindow(parent),
@@ -31,6 +32,8 @@ ui_main::ui_main(QWidget* parent)
     }
 	if(settings.contains("emulator/emu_path"))
 		m_app_settings.set_emu_path(settings.value("emulator/emu_path").toString());
+	if(settings.contains("emulator/emu_ospath"))
+		m_app_settings.set_emu_ospath(settings.value("emulator/emu_ospath").toString());
 	if(settings.contains("emulator/model"))
 		m_app_settings.set_emu_model(settings.value("emulator/model").toInt());
 	if(settings.contains("emulator/exp"))
@@ -155,6 +158,7 @@ void ui_main::NewProject()
 		menu_project_close->setEnabled(true);
 		menu_project_build->setEnabled(true);
 		menu_project_buildoptions->setEnabled(true);
+		menu_project_test->setEnabled(true);
 	}
 }
 
@@ -273,7 +277,7 @@ void ui_main::OpenProject()
 						pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 					if(attr.hasAttribute("exec"))
 						pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
-					pfile->set_filename(attr.value("name").toString());
+					pfile->set_filename(attr.value("name").toString());menu_project_test->setEnabled(true);
 					if(buildtype == BUILD_CART)
 						pfile->set_block(attr.value("block").toInt());
 					m_current_project->add_file(pfile);
@@ -318,7 +322,7 @@ void ui_main::OpenProject()
 					}
 				}
 			}
-		}
+		}menu_project_test->setEnabled(true);
 		if(stream.name() == "output")
 		{
 			QXmlStreamAttributes attr = stream.attributes();
@@ -411,6 +415,7 @@ void ui_main::CloseProject()
 	menu_project_close->setEnabled(false);
 	menu_project_build->setEnabled(false);
 	menu_project_buildoptions->setEnabled(false);
+	menu_project_test->setEnabled(false);
 }
 
 void ui_main::AddToProject()
@@ -1001,6 +1006,75 @@ void ui_main::ImportScr()
 	}
 }
 
+void ui_main::TestEmu()
+{
+	QString cmd;
+	QString drv;
+	QStringList args;
+
+	switch(m_app_settings.emu_model())
+	{
+	case appsettings::EMUMODEL_464:
+		drv = "cpc464";
+		break;
+	case appsettings::EMUMODEL_664:
+		drv = "cpc664";
+		break;
+	case appsettings::EMUMODEL_6128:
+		drv = "cpc6128";
+		break;
+	case appsettings::EMUMODEL_464PLUS:
+		drv = "cpc464p";
+		break;
+	case appsettings::EMUMODEL_6128PLUS:
+		drv = "cpc6128p";
+		break;
+	}
+	cmd = m_app_settings.emu_path();
+	args << drv << "-window";
+	if(m_app_settings.emu_model() == appsettings::EMUMODEL_464)
+		args << "-exp" << "ddi1" << "-flop";
+	else if(m_current_project->get_build_type() == BUILD_CART)
+		args << "-cart";
+	else
+		args << "-flop1";
+	args << QString(std::filesystem::current_path().c_str()) + QDir::separator() + m_current_project->get_output_filename();
+	if(m_current_project->get_build_type() == BUILD_DISK)
+		if(m_app_settings.emu_model() == appsettings::EMUMODEL_464PLUS || m_app_settings.emu_model() == appsettings::EMUMODEL_6128PLUS)
+			args << "-cart" << m_app_settings.emu_ospath();
+	Qt::WindowStates wnd = windowState();
+	setWindowState(Qt::WindowMinimized);
+	// todo: run MAME process
+	QProcess* proc = new QProcess();
+	proc->setWorkingDirectory(cmd.section('/',0,-2));
+	proc->setProcessChannelMode(QProcess::MergedChannels);
+	proc->setReadChannel(QProcess::StandardOutput);
+	proc->start(cmd, args);
+	if(text_console != nullptr)
+	{
+		while(proc->state() != QProcess::NotRunning)
+		{
+			char buffer[512];
+			qint64 count;
+			proc->waitForReadyRead();
+			while(proc->canReadLine())
+			{
+				count = proc->readLine(buffer,512);
+				if(count > 0)
+					text_console->insertPlainText(buffer);
+			}
+		}
+	}
+	proc->waitForFinished();
+	if(!proc->waitForFinished(-1))
+	{
+		QMessageBox::information(this,"Error",QString("MAME call failed. (%1)").arg(proc->error()));
+	}
+	//QMessageBox::information(this,"cmdline",cmd+" "+args.join(" "));
+	//QMessageBox::information(this,"cwd",cmd.section('/',0,-2));
+	setWindowState(wnd);
+}
+
 void ui_main::closeEvent(QCloseEvent* event)
 {
 	if(m_current_project != nullptr)
@@ -1010,6 +1084,7 @@ void ui_main::closeEvent(QCloseEvent* event)
     QSettings settings("cpcbuild.ini",QSettings::IniFormat);
 	settings.setValue("assembler/include_dir",m_app_settings.includedir());
 	settings.setValue("emulator/emu_path",m_app_settings.emu_path());
+	settings.setValue("emulator/emu_ospath",m_app_settings.emu_ospath());
 	settings.setValue("emulator/model",m_app_settings.emu_model());
 	settings.setValue("emulator/exp",m_app_settings.emu_exp());
 	event->accept();
@@ -1336,8 +1411,11 @@ void ui_main::CompileOptions()
 void ui_main::EmulatorSettings()
 {
 	QLineEdit* dlg_name = m_dlg_emuoptions->findChild<QLineEdit*>("dlg_emupath");
+	QLineEdit* dlg_os = m_dlg_emuoptions->findChild<QLineEdit*>("dlg_opt_ospath");
 	dlg_name->clear();
 	dlg_name->insert(m_app_settings.emu_path());
+	dlg_os->clear();
+	dlg_os->insert(m_app_settings.emu_ospath());
 	switch(m_app_settings.emu_model())
 	{
 	case appsettings::EMUMODEL_464:
@@ -1372,6 +1450,7 @@ void ui_main::EmulatorSettings()
 		else if(m_dlg_emuoptions->findChild<QRadioButton*>("dlg_opt_6128plus")->isChecked())
 			m = appsettings::EMUMODEL_6128PLUS;
 		m_app_settings.set_emu_path(dlg_name->text());
+		m_app_settings.set_emu_ospath(dlg_os->text());
 		m_app_settings.set_emu_model(m);
 		m_app_settings.set_emu_exp(e);
 	}

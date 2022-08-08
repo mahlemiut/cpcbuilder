@@ -19,6 +19,8 @@ public:
 	void set_emu_model(int model);
 	int emu_exp();
 	void set_emu_exp(int exp);
+	QString emu_ospath();
+	void set_emu_ospath(QString path);
 	QStringList::iterator include_begin() { return m_includedirs.begin(); }
 	QStringList::iterator include_end() { return m_includedirs.end(); }
 	enum
@@ -42,6 +44,7 @@ private:
 	QString m_pasmo_path;
 	bool m_pasmo_use_syspath;  // true if using Pasmo in system path
 	QString m_emu_path;
+	QString m_emu_ospath;  // path to CPC Plus OS cartridge for disk projects tested on a Plus driver
 	int m_emu_model;  // CPC model to run in emulator
 	int m_emu_exp;  // Expansion device to connect in emulator
 };

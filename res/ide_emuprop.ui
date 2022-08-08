@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>734</width>
-    <height>275</height>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,20 +17,6 @@
    <property name="fieldGrowthPolicy">
     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
    </property>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>MAME Emulator path:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="dlg_emupath">
-     <property name="toolTip">
-      <string>Full path to MESS executable</string>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
@@ -145,6 +131,30 @@
       </item>
      </layout>
     </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>MAME Emulator path:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="dlg_emupath">
+     <property name="toolTip">
+      <string>Full path to MESS executable</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="dlg_label_ospath">
+     <property name="text">
+      <string>OS Cartridge path (for Plus disk projects):</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="dlg_opt_ospath"/>
    </item>
   </layout>
  </widget>

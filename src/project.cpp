@@ -264,8 +264,10 @@ int project::build(QPlainTextEdit* output)
 			if(exitcode != 0)
 			{
 				if(output != nullptr)
+				{
 					output->appendPlainText(QString(">>> Pasmo returned an error (%1). Build not successful.\n").arg(exitcode));
-				output->ensureCursorVisible();
+					output->ensureCursorVisible();
+				}
 				m_built = false;
 				return -1;
 			}
