@@ -43,6 +43,9 @@ ui_main::ui_main(QWidget* parent)
 	load_descriptions();
 
     // pre-load some dialogs
+	QAction* act_boot = new QAction("Bootable",this);
+	connect(act_boot,SIGNAL(triggered()),this,SLOT(SetBootable()));
+	tree_files->addAction(act_boot);
 	QAction* act1 = new QAction("Properties...",this);
 	connect(act1,SIGNAL(triggered()),this,SLOT(EditProperties()));
 	tree_files->addAction(act1);
@@ -1042,9 +1045,19 @@ void ui_main::TestEmu()
 	if(m_current_project->get_build_type() == BUILD_DISK)
 		if(m_app_settings.emu_model() == appsettings::EMUMODEL_464PLUS || m_app_settings.emu_model() == appsettings::EMUMODEL_6128PLUS)
 			args << "-cart" << m_app_settings.emu_ospath();
+	// autoboot
+	QStringList basename = m_current_project->get_bootable_filename()->get_filename().split(".");
+	QString outfile = basename.first() + ".bin";
+	if(m_current_project->get_bootable_filename() != nullptr)
+		args << "-autoboot_command"  << QString("memory %1:load\\\"%2\\\":call %3\\n").arg(m_current_project->get_bootable_filename()->get_load_address() - 1) \
+			 .arg(outfile).arg(m_current_project->get_bootable_filename()->get_exec_address());
+	args << "-verbose";
+//	text_console->appendPlainText(args.join(" "));
+//	text_console->appendPlainText("\n");
+
 	Qt::WindowStates wnd = windowState();
 	setWindowState(Qt::WindowMinimized);
-	// todo: run MAME process
+
 	QProcess* proc = new QProcess();
 	proc->setWorkingDirectory(cmd.section('/',0,-2));
 	proc->setProcessChannelMode(QProcess::MergedChannels);
@@ -1065,11 +1078,7 @@ void ui_main::TestEmu()
 			}
 		}
 	}
-	proc->waitForFinished();
-	if(!proc->waitForFinished(-1))
-	{
-		QMessageBox::information(this,"Error",QString("MAME call failed. (%1)").arg(proc->error()));
-	}
+
 	//QMessageBox::information(this,"cmdline",cmd+" "+args.join(" "));
 	//QMessageBox::information(this,"cwd",cmd.section('/',0,-2));
 	setWindowState(wnd);
@@ -1148,7 +1157,8 @@ void ui_main::EditProperties()
     QLineEdit* dlg_exec = m_dlg_fileprop->findChild<QLineEdit*>("dlg_exec_address");
     QComboBox* dlg_type = m_dlg_fileprop->findChild<QComboBox*>("dlg_filetype");
 
-	unsigned int load_addr,exec_addr,filetype;
+	unsigned int load_addr,exec_addr;
+	int filetype;
 	filetype = m_current_project->get_filetype(filename);
 	load_addr = m_current_project->get_load_address(filename);
 	exec_addr = m_current_project->get_exec_address(filename);
@@ -1164,6 +1174,16 @@ void ui_main::EditProperties()
 		m_current_project->set_load_address(filename,dlg_load->text().toUInt(nullptr,16));
 		m_current_project->set_exec_address(filename,dlg_exec->text().toUInt(nullptr,16));
 	}
+}
+
+void ui_main::SetBootable()
+{
+	QString filename = tree_files->currentItem()->toolTip(0);
+
+	if(filename.isEmpty())
+		return;
+
+	m_current_project->set_bootable_filename(m_current_project->find_file(filename));
 }
 
 void ui_main::remove_file(QString filename)

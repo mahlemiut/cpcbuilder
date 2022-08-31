@@ -84,6 +84,8 @@ public:
 	void set_filetype(QString file, int type);
 	QString get_output_filename() { return m_outfilename; }
 	void set_output_filename(QString fname) { m_outfilename = fname; }
+	void set_bootable_filename(project_file* fname) { m_bootfile = fname; }
+	project_file* get_bootable_filename() { return m_bootfile; }
 	int get_build_type() { return m_buildtype; }
 	void set_build_type(int type) { m_buildtype = type; }
 	int build(QPlainTextEdit* output = nullptr);
@@ -93,6 +95,7 @@ private:
 	QString m_outfilename;  // filename of DSK to output to.
 	int m_buildtype;  // Build output - DSK or CPR
 	QList<project_file*> m_filelist;
+	project_file* m_bootfile;  // file to run when tested
 	bool m_built;  // build status (true if a build has been successful)
 	appsettings m_settings;
 };

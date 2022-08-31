@@ -51,6 +51,7 @@ project::project(QString name, QString filename, appsettings &stg) :
 	m_name(name),
 	m_outfilename(m_name+".dsk"),
 	m_buildtype(BUILD_DISK),
+	m_bootfile(nullptr),
 	m_built(false),
 	m_settings(stg)
 {
