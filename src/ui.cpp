@@ -43,7 +43,7 @@ ui_main::ui_main(QWidget* parent)
 	load_descriptions();
 
     // pre-load some dialogs
-	QAction* act_boot = new QAction("Bootable",this);
+	QAction* act_boot = new QAction("Set as bootable file",this);
 	connect(act_boot,SIGNAL(triggered()),this,SLOT(SetBootable()));
 	tree_files->addAction(act_boot);
 	QAction* act1 = new QAction("Properties...",this);
@@ -235,6 +235,8 @@ void ui_main::OpenProject()
 							pfile->set_load_address(attr.value("load").toString().toUInt(nullptr,16));
 						if(attr.hasAttribute("exec"))
 							pfile->set_exec_address(attr.value("exec").toString().toUInt(nullptr,16));
+						if(attr.hasAttribute("bootable"))
+							m_current_project->set_bootable_filename(pfile);
 						pfile->set_filename(attr.value("name").toString());
 						if(buildtype == BUILD_CART)
 							pfile->set_block(attr.value("block").toInt());

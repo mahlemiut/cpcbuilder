@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="scrload" buildtype="disk">
-    <file name="loader.asm" type="asm" load="8000" exec="8000"/>
+    <file name="loader.asm" type="asm" load="8000" exec="8000" bootable="yes"/>
     <file name="shock2.bin" type="gfx" load="8000" exec="8000" width="80" height="200"/>
     <output filename="scrload.dsk"/>
 </project>

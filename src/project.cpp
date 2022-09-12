@@ -145,6 +145,8 @@ void project::xml_filelist(QXmlStreamWriter* stream, QDir curr)
 			stream->writeAttribute("type","asm");
 			stream->writeAttribute("load",QString::number((*it)->get_load_address(),16));
 			stream->writeAttribute("exec",QString::number((*it)->get_exec_address(),16));
+			if((*it)->get_filename() == m_bootfile->get_filename())
+				stream->writeAttribute("bootable","yes");
 			if(m_buildtype == BUILD_CART)
 				stream->writeAttribute("block",QString::number((*it)->get_block(),10));
 		}
