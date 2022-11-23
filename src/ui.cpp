@@ -1574,6 +1574,7 @@ bool ui_QMdiSubWindow::save_text(QString filename)
 	stream << data;
 	f.close();
 	m_modified = false;
+	update_title();
 
 	return true;  // TODO: error testing
 }
@@ -1599,6 +1600,7 @@ bool ui_QMdiSubWindow::load_binary(QString filename)
 	bin->set_data(data,fsize);
 
 	m_modified = false;
+	update_title();
 
 	return true;  // TODO: error testing
 }
@@ -1651,8 +1653,8 @@ bool ui_QMdiSubWindow::load_gfx(QString filename)
 		return false;
 
 	m_modified = false;
-
 	set_filename(filename);
+	update_title();
 	f.open(QFile::ReadOnly);
 	if(has_header)
 	{
@@ -1661,6 +1663,7 @@ bool ui_QMdiSubWindow::load_gfx(QString filename)
 		f.seek(0x80);  // skip AMSDOS header
 		f.read(reinterpret_cast<char*>(data),fsize);
 		m_modified = true;  // files are not saved with AMSDOS header, so it is effectively modified.
+		update_title();
 	}
 	else
 	{
@@ -1700,6 +1703,7 @@ bool ui_QMdiSubWindow::load_gfx(QString filename, int width, int height)
 	gfx->draw_scene();
 
 	m_modified = false;
+	update_title();
 
 	return true;  // TODO: error testing
 }
@@ -1752,6 +1756,7 @@ bool ui_QMdiSubWindow::load_tileset(QString filename)
 		return false;
 
 	m_modified = false;
+	update_title();
 
 	set_filename(filename);
 	f.open(QFile::ReadOnly);
@@ -1762,6 +1767,7 @@ bool ui_QMdiSubWindow::load_tileset(QString filename)
 		f.seek(0x80);  // skip AMSDOS header
 		f.read(reinterpret_cast<char*>(data),fsize);
 		m_modified = true;  // files are not saved with AMSDOS header, so it is effectively modified.
+		update_title();
 	}
 	else
 	{
@@ -1801,6 +1807,7 @@ bool ui_QMdiSubWindow::load_tileset(QString filename, int width, int height)
 	gfx->draw_scene();
 
 	m_modified = false;
+	update_title();
 
 	return true;  // TODO: error testing
 }
@@ -1945,10 +1952,13 @@ bool ui_QMdiSubWindow::import_scr(QString filename)
 	data = reinterpret_cast<unsigned char*>(malloc(16384));
 	output = reinterpret_cast<unsigned char*>(malloc(16384));  // will be freed when the widget is closed, or when set_data is called again
 	m_modified = false;
+	update_title();
+
 	if(has_header)
 	{
 		f.seek(0x80);  // skip AMSDOS header
 		m_modified = true;
+		update_title();
 	}
 //	fsize = f.read(reinterpret_cast<char*>(data),16384);  // limit to 16kB
 	f.close();
@@ -2078,6 +2088,7 @@ void ui_QMdiSubWindow::export_pal_to_clipboard()
 void ui_QMdiSubWindow::contents_changed()
 {
 	m_modified = true;
+	update_title();
 }
 
 void ui_QMdiSubWindow::cursor_changed()
@@ -2155,6 +2166,32 @@ void ui_QMdiSubWindow::closeEvent(QCloseEvent* event)
 	{
 		main->remove_file(m_filename);
 		event->accept();
+	}
+}
+
+void ui_QMdiSubWindow::update_title()
+{
+	QStringList split = get_filename().split(QDir::separator());
+	QString saved = "";
+	if(m_modified)
+		saved = "(Unsaved) ";
+	switch(m_doctype)
+	{
+		case PROJECT_FILE_GRAPHICS:
+			setWindowTitle(saved + "Graphics - " + split.last());
+		break;
+		case PROJECT_FILE_SOURCE_ASM:
+			setWindowTitle(saved + "Z80 Assembly - " + split.last());
+		break;
+		case PROJECT_FILE_TILESET:
+			setWindowTitle(saved + "Tileset - " + split.last());
+		break;
+		case PROJECT_FILE_ASCII:
+			setWindowTitle(saved + "ASCII - " + split.last());
+		break;
+		case PROJECT_FILE_BINARY:
+			setWindowTitle(saved + "Binary - " + split.last());
+		break;
 	}
 }
 

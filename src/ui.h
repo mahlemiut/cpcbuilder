@@ -149,6 +149,7 @@ public:
 	QString get_filename() { return m_filename; }
 	void set_filename(QString filename) { m_filename = filename; }
 	bool is_modified() { return m_modified; }
+	void update_title();
 	QWidget* parent() { return m_parent; }
 public slots:
 	void contents_changed();
