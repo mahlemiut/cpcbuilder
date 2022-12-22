@@ -155,14 +155,53 @@ public slots:
 	void contents_changed();
 	void cursor_changed();
 protected:
-	bool event(QEvent *event);
-	void closeEvent(QCloseEvent* event);
+	bool event(QEvent *event) override;
+	void closeEvent(QCloseEvent* event) override;
 private:
 	QWidget* m_parent;
 	QString m_filename;
 	bool m_modified;
 	project* m_project;  // the project that the file is a part of, if any
 	int m_doctype;  // type of document to be displayed
+};
+
+class AsmEditor : public QTextEdit
+{
+	Q_OBJECT
+
+public:
+	AsmEditor(QWidget* parent = nullptr);
+	void lineNumberPaint(QPaintEvent* ev);
+	int lineNumberWidth();
+public slots:
+	void resizeEvent(QResizeEvent* ev) override;
+	void updateWidth();
+	void updateLineWidth();
+	void toggleLineNum(bool ch);
+private:
+	int getFirstBlock();
+	QWidget* lineNumber;
+	bool showLineNum;
+};
+
+class LineNumbers : public QWidget
+{
+public:
+	LineNumbers(AsmEditor* ed) : QWidget(ed), editor(ed)
+	{
+		setFont(ed->font());
+	}
+	QSize sizeHint() const override
+	{
+		return QSize(editor->lineNumberWidth(),0);
+	}
+protected:
+	void paintEvent(QPaintEvent* ev) override
+	{
+		editor->lineNumberPaint(ev);
+	}
+private:
+	AsmEditor* editor;
 };
 
 #endif /* UI_H_ */

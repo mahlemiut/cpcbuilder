@@ -487,7 +487,7 @@ ui_QMdiSubWindow* ui_main::CreateWindow(int doctype)
 ui_QMdiSubWindow* ui_main::CreateWindowAsm()
 {
 	ui_QMdiSubWindow* subwin = new ui_QMdiSubWindow(PROJECT_FILE_SOURCE_ASM,this);
-	QTextEdit* widget = new QTextEdit;
+	QTextEdit* widget = new AsmEditor;
 	QFont font("Courier New",14);
 	widget->setFont(font);
 	widget->setLineWrapMode(QTextEdit::NoWrap);
@@ -664,7 +664,7 @@ void ui_main::NewFile()
 
 void ui_main::NewGfxFile()
 {
-	int w,h;
+	unsigned int w,h;
 
 	unsigned char* data;
 	ui_QMdiSubWindow* subwin = CreateWindowGraphics();
@@ -682,7 +682,7 @@ void ui_main::NewGfxFile()
 
 void ui_main::NewTilesetFile()
 {
-	int w,h;
+	unsigned int w,h;
 	QUiLoader loader;
 	QFile uif(":/forms/ide_tilesize.ui");
 	QWidget* form;
@@ -2280,4 +2280,129 @@ void highlighter::highlightBlock(const QString& text)
     }
     setCurrentBlockState(0);
 
+}
+
+// Line Numbering area for ASM editing windows
+AsmEditor::AsmEditor(QWidget* parent) :
+	QTextEdit(parent),
+	showLineNum(true)
+{
+	lineNumber = new LineNumbers(this);
+
+	connect(this->document(),SIGNAL(blockCountChanged(int)),this,SLOT(updateWidth()));
+	connect(this->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(updateLineWidth()));
+	connect(this,SIGNAL(textChanged()),this,SLOT(updateLineWidth()));
+	connect(this,SIGNAL(cursorPositionChanged()),this,SLOT(updateLineWidth()));
+
+	QAction* act1 = new QAction("Show Line Numbers",this);
+	act1->setCheckable(true);
+	act1->setChecked(showLineNum);
+	addAction(act1);
+	connect(act1,SIGNAL(toggled(bool)),this,SLOT(toggleLineNum(bool)));
+
+	QAction* sep = new QAction(this);
+	sep->setSeparator(true);
+	addAction(sep);
+
+	updateWidth();
+}
+
+int AsmEditor::lineNumberWidth()
+{
+	return (4 * fontMetrics().horizontalAdvance(QLatin1Char('9'))) + 1;
+}
+
+int AsmEditor::getFirstBlock()
+{
+	QTextCursor c = QTextCursor(this->document());
+	c.movePosition(QTextCursor::Start);
+	for(int x=0;x<this->document()->blockCount();++x)
+	{
+		QTextBlock b = c.block();
+		QRect r1 = this->viewport()->geometry();
+		QRect r2 = this->document()->documentLayout()->blockBoundingRect(b).translated(
+					this->viewport()->geometry().x(),this->viewport()->geometry().y() -
+					this->verticalScrollBar()->sliderPosition()).toRect();
+		if(r1.contains(r2,true))
+			return x;
+		c.movePosition(QTextCursor::NextBlock);
+	}
+	return 0;
+}
+
+void AsmEditor::lineNumberPaint(QPaintEvent* ev)
+{
+	if(!showLineNum)
+		return;
+
+	QPainter paint(lineNumber);
+	int b = this->getFirstBlock();
+	QTextBlock block = this->document()->findBlockByNumber(b);
+	QTextBlock prev_block = (b > 0) ? this->document()->findBlockByNumber(b-1) : block;
+	int top = this->document()->documentLayout()->blockBoundingRect(prev_block).translated(
+				this->viewport()->geometry().x(),this->viewport()->geometry().y() -
+				this->verticalScrollBar()->sliderPosition()).toRect().top();
+	--top;
+	if(b > 0)
+		--b;
+	paint.setPen(QColor(255,255,0));
+	paint.setBrush(QBrush(QColor(255,255,0),Qt::SolidPattern));
+	paint.drawRect(ev->rect());
+	paint.setPen(QColor(128,128,0));
+	paint.drawLine(lineNumberWidth() - 1,ev->rect().top(),lineNumberWidth() - 1,ev->rect().bottom());
+	int bottom = top + static_cast<int>(this->document()->documentLayout()->blockBoundingRect(block).height());
+
+	while(block.isValid() && top <= ev->rect().height())
+	{
+		if(block.isVisible())
+		{
+			QString num = QString::number(b+1);
+			paint.setPen(QColor(0,0,255));
+			paint.drawText(0,top,lineNumber->width() - 1,fontMetrics().height(),Qt::AlignRight, num);
+		}
+		top = bottom;
+		bottom += fontMetrics().height();
+		block = block.next();
+		++b;
+	}
+}
+
+void AsmEditor::resizeEvent(QResizeEvent* ev)
+{
+	QTextEdit::resizeEvent(ev);
+	QRect r = this->contentsRect();
+
+	if(showLineNum)
+		lineNumber->setGeometry(QRect(r.left(),r.top(),lineNumberWidth(),r.height()));
+//	else
+//		lineNumber->setGeometry(r);
+}
+
+void AsmEditor::updateWidth()
+{
+	if(showLineNum)
+		setViewportMargins(lineNumberWidth(),0,0,0);
+	else
+		setViewportMargins(0,0,0,0);
+}
+
+void AsmEditor::updateLineWidth()
+{
+	if(showLineNum)
+	{
+		QRect r = this->contentsRect();
+		lineNumber->update(0,r.y(),lineNumber->width(),r.height());
+		setViewportMargins(lineNumberWidth(),0,0,0);
+	}
+	else
+		setViewportMargins(0,0,0,0);
+}
+
+void AsmEditor::toggleLineNum(bool ch)
+{
+	if(ch)
+		showLineNum = true;
+	else
+		showLineNum = false;
+	updateLineWidth();
 }
